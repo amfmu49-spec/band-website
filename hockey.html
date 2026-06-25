@@ -573,6 +573,9 @@
       }
       
       function playWallHitSound() {
+        if (navigator.vibrate) {
+          try { navigator.vibrate(10); } catch(e) {}
+        }
         if (!audioCtx) return;
         try {
           const osc = audioCtx.createOscillator();
@@ -590,6 +593,9 @@
       }
 
       function playMalletHitSound(isPlayer) {
+        if (navigator.vibrate) {
+          try { navigator.vibrate(20); } catch(e) {}
+        }
         if (!audioCtx) return;
         try {
           // metallic click using two oscillators
@@ -620,6 +626,15 @@
       }
 
       function playGoalSound(playerScored) {
+        if (navigator.vibrate) {
+          try {
+            if (playerScored) {
+              navigator.vibrate([100, 50, 100]);
+            } else {
+              navigator.vibrate(250);
+            }
+          } catch(e) {}
+        }
         if (!audioCtx) return;
         try {
           const now = audioCtx.currentTime;
@@ -659,6 +674,15 @@
       }
 
       function playMatchEndSound(playerWon) {
+        if (navigator.vibrate) {
+          try {
+            if (playerWon) {
+              navigator.vibrate([150, 100, 150, 100, 300]);
+            } else {
+              navigator.vibrate([300, 150, 300]);
+            }
+          } catch(e) {}
+        }
         if (!audioCtx) return;
         try {
           const now = audioCtx.currentTime;
