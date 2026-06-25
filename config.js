@@ -432,7 +432,7 @@ const BAND_CONFIG = {
       }
     }
   ],
-  "lastUpdated": 1782367903271
+  "lastUpdated": 1782371161891
 };
 
 // グローバル変数としてアタッチ
