@@ -1,10 +1,14 @@
 # deploy_github.ps1
 # GitHub Pages Deployment Script
 
-$ErrorActionPreference = "Stop"
-
 $PSScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $PSScriptRoot
+
+# Ensure Git is available
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    Write-Error "Git command not found."
+    exit 1
+}
 
 # 1. Check if git status has any changes
 $status = git status --porcelain
@@ -21,11 +25,13 @@ $commitMsg = "Update content via admin panel [$(Get-Date -Format 'yyyy-MM-dd HH:
 git commit -m $commitMsg
 
 # 4. Push to remote origin
-$pushResult = git push origin main 2>&1
+git push origin main
+$success = ($LASTEXITCODE -eq 0)
 
-if ($LASTEXITCODE -eq 0) {
+if ($success) {
     Write-Output "Successfully deployed to GitHub Pages!"
+    exit 0
 } else {
-    Write-Error "Failed to push to GitHub: $pushResult"
+    Write-Error "Failed to push to GitHub repository."
     exit 1
 }

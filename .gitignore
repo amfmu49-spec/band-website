@@ -4,3 +4,4 @@ run_helper.bat
 netlify_config.json
 replace_images.ps1
 .DS_Store
+deploy.log
