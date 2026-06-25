@@ -907,7 +907,10 @@
         if (puck.y < chaseRangeY) {
           targetX = puck.x;
           // Slowly push forward or retreat
-          if (puck.y < aiMallet.y && Math.abs(puck.x - aiMallet.x) < 50) {
+          if (puck.y < 65) {
+            // Prevent pushing the puck against the top wall
+            targetY = puck.y + 45;
+          } else if (puck.y < aiMallet.y && Math.abs(puck.x - aiMallet.x) < 50) {
             targetY = puck.y - 10; // try to hit puck forward
           } else {
             targetY = Math.min(tableHeight / 2 - aiMallet.radius, puck.y - 15);
