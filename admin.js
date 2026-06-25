@@ -740,7 +740,7 @@ function setupListeners(config) {
     // Step 2: Request GitHub Pages Deploy from Helper Server
     deployStatusText.textContent = "変更内容をコミットしてGitHubに送信中...";
     try {
-      const response = await fetch('http://localhost:3000/deploy', {
+      const response = await fetch('http://localhost:3001/deploy', {
         method: 'POST'
       });
       const data = await response.json();
@@ -939,7 +939,7 @@ function getDragAfterElement(container, y) {
  */
 async function saveToDisk(jsContent) {
   try {
-    const response = await fetch('http://localhost:3000/save', {
+    const response = await fetch('http://localhost:3001/save', {
       method: 'POST',
       headers: {
         'Content-Type': 'text/plain; charset=utf-8'

@@ -1,6 +1,8 @@
 # deploy_github.ps1
 # GitHub Pages Deployment Script
 
+$ErrorActionPreference = "Stop"
+
 $PSScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $PSScriptRoot
 
