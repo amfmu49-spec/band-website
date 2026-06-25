@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>A.M.F ARCADE - RHYTHM ACTION</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+  
+  <style>
+    /* Prevent text selection and scrolling/bouncing on mobile */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #030305;
+      font-family: var(--font-body);
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    .rhythm-body {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      position: relative;
+    }
+
+    /* Setup/Lobby Screen */
+    .lobby-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+      z-index: 10;
+      background: rgba(3, 3, 5, 0.95);
+      backdrop-filter: blur(15px);
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+      overflow-y: auto;
+    }
+
+    .lobby-container.hide {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .lobby-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 24px;
+      padding: 30px;
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(168, 85, 247, 0.05);
+      box-sizing: border-box;
+    }
+
+    .lobby-title {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: 0.15rem;
+      background: linear-gradient(135deg, #25f4ee 0%, var(--color-accent) 50%, var(--color-primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 5px;
+      text-shadow: 0 0 20px rgba(37, 244, 238, 0.2);
+    }
+
+    .lobby-subtitle {
+      color: var(--color-text-secondary);
+      font-size: 0.88rem;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--color-accent);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05rem;
+    }
+
+    .custom-select, .custom-file-btn {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .custom-select:focus {
+      border-color: var(--color-accent);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    /* File upload design */
+    .upload-area {
+      border: 2px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.01);
+      transition: border-color 0.3s, background 0.3s;
+    }
+
+    .upload-area:hover, .upload-area.dragover {
+      border-color: #25f4ee;
+      background: rgba(37, 244, 238, 0.03);
+    }
+
+    .upload-icon {
+      font-size: 1.8rem;
+      color: #25f4ee;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      font-size: 0.82rem;
+      color: var(--color-text-secondary);
+      line-height: 1.4;
+    }
+
+    .upload-file-info {
+      font-size: 0.85rem;
+      color: #25f4ee;
+      font-weight: 600;
+      margin-top: 10px;
+      word-break: break-all;
+      display: none;
+    }
+
+    /* Option tabs for difficulty */
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .option-tab {
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      color: var(--color-text-secondary);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .option-tab.active {
+      color: #fff;
+      background: rgba(168, 85, 247, 0.15);
+      border-color: var(--color-primary);
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+    }
+
+    /* Speed Slider */
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .slider-container input[type=range] {
+      flex: 1;
+      accent-color: #25f4ee;
+    }
+
+    .slider-val {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: #25f4ee;
+      width: 40px;
+      text-align: right;
+    }
+
+    /* Start Button */
+    .start-btn {
+      width: 100%;
+      padding: 15px;
+      border-radius: 30px;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.1rem;
+      margin-top: 15px;
+    }
+
+    .back-btn-lobby {
+      margin-top: 15px;
+      display: inline-flex;
+      font-size: 0.85rem;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .back-btn-lobby:hover {
+      color: #fff;
+    }
+
+    /* Analyzer overlay */
+    .analyzer-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 15;
+      background: rgba(3, 3, 5, 0.98);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .analyzer-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .analyzer-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(37, 244, 238, 0.1);
+      border-left-color: #25f4ee;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+      box-shadow: 0 0 20px rgba(37, 244, 238, 0.2);
+    }
+
+    .analyzer-text {
+      color: #fff;
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .analyzer-progress {
+      width: 200px;
+      height: 4px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .analyzer-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #25f4ee, var(--color-accent));
+      transition: width 0.1s;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Game Play Area */
+    .game-view {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-width: 500px;
+      background-color: #030307;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Top HUD */
+    .game-hud {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      right: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 5;
+      font-family: var(--font-display);
+    }
+
+    .hud-combo {
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(255,255,255,0.3);
+    }
+
+    .hud-score {
+      color: #25f4ee;
+      font-size: 1.4rem;
+      font-weight: 800;
+      text-shadow: 0 0 10px rgba(37,244,238,0.4);
+    }
+
+    .hud-back-btn {
+      pointer-events: auto;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 15px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Mobile virtual touch lanes */
+    .mobile-touch-zones {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 28%; /* Covers bottom area */
+      display: flex;
+      z-index: 6;
+      box-sizing: border-box;
+      pointer-events: auto;
+      max-width: 500px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .touch-zone {
+      flex: 1;
+      height: 100%;
+      border-right: 1px dashed rgba(255, 255, 255, 0.02);
+      position: relative;
+      cursor: pointer;
+    }
+
+    .touch-zone:last-child {
+      border-right: none;
+    }
+
+    /* Key Assist Labels on lanes */
+    .key-label {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.2);
+      pointer-events: none;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+    }
+
+    @media (max-width: 600px) {
+      .key-label {
+        display: none; /* Hide key labels on mobile */
+      }
+    }
+
+    /* Result Screen Overlay */
+    .result-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+      z-index: 12;
+      background: rgba(3, 3, 5, 0.96);
+      backdrop-filter: blur(15px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+      overflow-y: auto;
+    }
+
+    .result-container.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .result-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 24px;
+      padding: 30px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      box-sizing: border-box;
+    }
+
+    .result-title {
+      font-family: var(--font-display);
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, #25f4ee, var(--color-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 5px;
+      text-shadow: 0 0 20px rgba(37,244,238,0.2);
+    }
+
+    .result-song {
+      font-size: 0.9rem;
+      color: var(--color-text-secondary);
+      margin-bottom: 25px;
+      word-break: break-all;
+    }
+
+    .result-score-big {
+      font-family: var(--font-display);
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 20px;
+      text-shadow: 0 0 25px rgba(255,255,255,0.2);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 12px;
+      border-radius: 12px;
+      text-align: left;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--color-text-secondary);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.03rem;
+    }
+
+    .stat-val {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .stat-val.perfect { color: #25f4ee; }
+    .stat-val.great { color: #a855f7; }
+    .stat-val.good { color: #ec4899; }
+    .stat-val.miss { color: #ef4444; }
+  </style>
+</head>
+<body class="rhythm-body">
+
+  <!-- Glowing Background Orbs -->
+  <div class="glow-orb orb-1" style="background: rgba(37, 244, 238, 0.05);"></div>
+  <div class="glow-orb orb-2" style="background: rgba(168, 85, 247, 0.05);"></div>
+
+  <!-- Setup Lobby Screen -->
+  <div class="lobby-container" id="lobby-container">
+    <div class="lobby-card">
+      <h1 class="lobby-title">RHYTHM ACTION</h1>
+      <p class="lobby-subtitle">お気に入りの音楽で遊ぼう！<br>アップロードした曲が自動で音ゲーの譜面に変換されます。</p>
+      
+      <!-- Selection of Preset/Upload -->
+      <div class="form-group">
+        <label class="form-label">音楽を選択</label>
+        <select class="custom-select" id="song-select" style="margin-bottom: 12px;">
+          <!-- Loaded dynamically from config.js -->
+          <option value="upload">自分のMP3をアップロードする ➔</option>
+        </select>
+        
+        <!-- Drag & Drop Upload Area -->
+        <div class="upload-area" id="upload-area">
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+          <div class="upload-text">MP3ファイルをここにドラッグ＆ドロップ<br>またはクリックして選択</div>
+          <input type="file" id="file-input" accept="audio/mp3, audio/*" style="display: none;">
+          <div class="upload-file-info" id="file-info"></div>
+        </div>
+      </div>
+
+      <!-- Difficulty Selection -->
+      <div class="form-group">
+        <label class="form-label">解析難易度</label>
+        <div class="options-grid" id="diff-tabs">
+          <div class="option-tab" data-diff="easy">EASY</div>
+          <div class="option-tab active" data-diff="normal">NORMAL</div>
+          <div class="option-tab" data-diff="hard">HARD</div>
+        </div>
+      </div>
+
+      <!-- Speed Adjustment -->
+      <div class="form-group">
+        <label class="form-label">スクロールスピード</label>
+        <div class="slider-container">
+          <input type="range" id="speed-slider" min="1.0" max="5.0" step="0.5" value="3.0">
+          <span class="slider-val" id="speed-val">3.0x</span>
+        </div>
+      </div>
+
+      <!-- Start Button -->
+      <button id="start-game-btn" class="game-btn game-btn-primary start-btn">PLAY GAME</button>
+      
+      <a href="index.html" class="back-btn-lobby">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        サイトに戻る
+      </a>
+    </div>
+  </div>
+
+  <!-- Audio Analyzer Loading Screen -->
+  <div class="analyzer-overlay" id="analyzer-overlay">
+    <div class="analyzer-spinner"></div>
+    <div class="analyzer-text" id="analyzer-status">デコード中...</div>
+    <div class="analyzer-progress">
+      <div class="analyzer-bar" id="analyzer-bar"></div>
+    </div>
+  </div>
+
+  <!-- Game Play Area -->
+  <div class="game-view">
+    <!-- Top HUD -->
+    <div class="game-hud">
+      <button class="hud-back-btn" id="quit-btn">QUIT</button>
+      <div style="text-align: center;">
+        <div class="hud-combo" id="hud-combo" style="opacity: 0; transform: scale(1); transition: opacity 0.15s, transform 0.15s;">0 COMBO</div>
+      </div>
+      <div class="hud-score" id="hud-score">0000000</div>
+    </div>
+
+    <!-- Game canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Mobile Virtual Touch Lanes (Invisible clickable areas covering bottom 28%) -->
+    <div class="mobile-touch-zones" id="touch-zones">
+      <div class="touch-zone" id="zone-0"><span class="key-label">D</span></div>
+      <div class="touch-zone" id="zone-1"><span class="key-label">F</span></div>
+      <div class="touch-zone" id="zone-2"><span class="key-label">J</span></div>
+      <div class="touch-zone" id="zone-3"><span class="key-label">K</span></div>
+    </div>
+  </div>
+
+  <!-- Result Screen -->
+  <div class="result-container" id="result-container">
+    <div class="result-card">
+      <h2 class="result-title">FINISH!!</h2>
+      <p class="result-song" id="result-song-name">Song Name</p>
+      
+      <div class="result-score-big" id="result-score-val">0</div>
+      
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-label">PERFECT</div>
+          <div class="stat-val perfect" id="result-perfect">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">GREAT</div>
+          <div class="stat-val great" id="result-great">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">GOOD</div>
+          <div class="stat-val good" id="result-good">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">MISS</div>
+          <div class="stat-val miss" id="result-miss">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">MAX COMBO</div>
+          <div class="stat-val" id="result-maxcombo">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">ACCURACY</div>
+          <div class="stat-val" id="result-accuracy" style="color: #25f4ee;">0%</div>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button id="retry-btn" class="game-btn game-btn-primary" style="padding: 12px 0; border-radius: 20px; font-size: 0.9rem; font-weight: 700;">もう一度遊ぶ</button>
+        <button id="lobby-btn" class="game-btn" style="padding: 12px 0; border-radius: 20px; font-size: 0.9rem; font-weight: 700; color: #fff;">曲選択に戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Configurations & Engine -->
+  <script src="config.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Load configuration and fill presets
+      let config = window.BAND_CONFIG;
+      const localData = localStorage.getItem('band_config_data');
+      if (localData) {
+        try {
+          const parsedLocal = JSON.parse(localData);
+          if (!config || (config.lastUpdated && parsedLocal.lastUpdated && parsedLocal.lastUpdated >= config.lastUpdated)) {
+            config = parsedLocal;
+          }
+        } catch(e) {}
+      }
+
+      // Populate preset tracks in dropdown
+      const songSelect = document.getElementById('song-select');
+      const validPresets = [];
+      
+      if (config && config.gameMusics && Array.isArray(config.gameMusics)) {
+        config.gameMusics.forEach((musicUrl, idx) => {
+          if (musicUrl && musicUrl.trim() !== '') {
+            const detail = (config.gameMusicDetails && config.gameMusicDetails[idx]) ? config.gameMusicDetails[idx] : null;
+            const title = (detail && detail.title) ? detail.title : `バンド登録楽曲スロット ${idx + 1}`;
+            const opt = document.createElement('option');
+            opt.value = `preset_${idx}`;
+            opt.textContent = `[公式曲] ${title}`;
+            songSelect.insertBefore(opt, songSelect.firstChild);
+            validPresets.push({
+              url: musicUrl,
+              title: title
+            });
+          }
+        });
+      }
+
+      // Setup DOM references
+      const lobbyContainer = document.getElementById('lobby-container');
+      const uploadArea = document.getElementById('upload-area');
+      const fileInput = document.getElementById('file-input');
+      const fileInfo = document.getElementById('file-info');
+      const diffTabs = document.getElementById('diff-tabs');
+      const speedSlider = document.getElementById('speed-slider');
+      const speedVal = document.getElementById('speed-val');
+      const startGameBtn = document.getElementById('start-game-btn');
+      const analyzerOverlay = document.getElementById('analyzer-overlay');
+      const analyzerStatus = document.getElementById('analyzer-status');
+      const analyzerBar = document.getElementById('analyzer-bar');
+      
+      const gameCanvas = document.getElementById('game-canvas');
+      const ctx = gameCanvas.getContext('2d');
+      const hudCombo = document.getElementById('hud-combo');
+      const hudScore = document.getElementById('hud-score');
+      const quitBtn = document.getElementById('quit-btn');
+      const touchZonesContainer = document.getElementById('touch-zones');
+      
+      const resultContainer = document.getElementById('result-container');
+      const resultSongName = document.getElementById('result-song-name');
+      const resultScoreVal = document.getElementById('result-score-val');
+      const resultPerfect = document.getElementById('result-perfect');
+      const resultGreat = document.getElementById('result-great');
+      const resultGood = document.getElementById('result-good');
+      const resultMiss = document.getElementById('result-miss');
+      const resultMaxCombo = document.getElementById('result-maxcombo');
+      const resultAccuracy = document.getElementById('result-accuracy');
+      const retryBtn = document.getElementById('retry-btn');
+      const lobbyBtn = document.getElementById('lobby-btn');
+
+      // State variables
+      let selectedSource = 'preset_0'; // default preset if exists
+      if (validPresets.length === 0) {
+        selectedSource = 'upload';
+        songSelect.value = 'upload';
+        uploadArea.style.display = 'block';
+      } else {
+        songSelect.value = 'preset_0';
+        uploadArea.style.display = 'none';
+      }
+      
+      let uploadedFile = null;
+      let selectedDiff = 'normal';
+      let scrollSpeed = 3.0; // 1.0 to 5.0
+      
+      // Game states
+      let audioCtx = null;
+      let decodedAudioBuffer = null; // Decoded AudioBuffer
+      let sourceNode = null; // AudioBufferSourceNode
+      let audioStartTime = 0; // playback start time
+      let audioDuration = 0; // length of song
+      let notes = []; // Array of { time: seconds, lane: 0-3, hit: false }
+      let gameActive = false;
+      let score = 0;
+      let combo = 0;
+      let maxCombo = 0;
+      let counts = { perfect: 0, great: 0, good: 0, miss: 0 };
+      let hitFeedback = [false, false, false, false]; // feedback flash for lanes
+      let scoreAnims = []; // Float text animations for PERFECT/GREAT etc.
+      let particleEffects = []; // Tap particles
+      
+      // UI Settings
+      let canvasWidth = 400;
+      let canvasHeight = 600;
+      const judgmentLineY = 500; // Y coordinate for keypress line
+      const noteRadius = 22;
+      const colors = ['#25f4ee', '#a855f7', '#ec4899', '#facc15']; // Cyan, Purple, Pink, Yellow for lanes
+      
+      // Utility to convert Base64 MP3 to ArrayBuffer
+      function base64ToArrayBuffer(base64) {
+        const parts = base64.split(',');
+        const raw = window.atob(parts[1]);
+        const rawLength = raw.length;
+        const uInt8Array = new Uint8Array(rawLength);
+        for (let i = 0; i < rawLength; ++i) {
+          uInt8Array[i] = raw.charCodeAt(i);
+        }
+        return uInt8Array.buffer;
+      }
+
+      // Handle selectors
+      songSelect.addEventListener('change', () => {
+        selectedSource = songSelect.value;
+        if (selectedSource === 'upload') {
+          uploadArea.style.display = 'block';
+        } else {
+          uploadArea.style.display = 'none';
+        }
+      });
+
+      // Drag & drop logic
+      uploadArea.addEventListener('click', () => fileInput.click());
+      
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+      });
+      
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+      });
+      
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          handleFileSelect(e.dataTransfer.files[0]);
+        }
+      });
+      
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          handleFileSelect(e.target.files[0]);
+        }
+      });
+      
+      function handleFileSelect(file) {
+        if (file.type.match('audio.*') || file.name.endsWith('.mp3')) {
+          uploadedFile = file;
+          fileInfo.style.display = 'block';
+          fileInfo.textContent = `選択された曲: ${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`;
+        } else {
+          alert('MP3などの音声ファイルをアップロードしてください。');
+        }
+      }
+
+      // Difficulty tabs
+      diffTabs.addEventListener('click', (e) => {
+        if (e.target.classList.contains('option-tab')) {
+          Array.from(diffTabs.children).forEach(el => el.classList.remove('active'));
+          e.target.classList.add('active');
+          selectedDiff = e.target.getAttribute('data-diff');
+        }
+      });
+
+      // Speed Slider
+      speedSlider.addEventListener('input', (e) => {
+        scrollSpeed = parseFloat(e.target.value);
+        speedVal.textContent = scrollSpeed.toFixed(1) + 'x';
+      });
+
+      // Canvas resizing to fit screen
+      function resizeCanvas() {
+        const parent = gameCanvas.parentElement;
+        const rect = parent.getBoundingClientRect();
+        canvasWidth = Math.min(rect.width, 500);
+        canvasHeight = rect.height;
+        
+        gameCanvas.width = canvasWidth;
+        gameCanvas.height = canvasHeight;
+      }
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+
+      // ==========================================
+      // BEAT ANALYSIS ENGINE (Web Audio API)
+      // ==========================================
+      function analyzeAudioFile(audioDataBuffer) {
+        return new Promise((resolve) => {
+          // Initialize AudioContext
+          if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          
+          analyzerStatus.textContent = '音声データをデコード中...';
+          analyzerBar.style.width = '20%';
+
+          // Decode array buffer
+          audioCtx.decodeAudioData(audioDataBuffer, (decodedBuffer) => {
+            analyzerStatus.textContent = 'リズムとテンポを解析中...';
+            analyzerBar.style.width = '50%';
+            
+            // Peak analysis algorithm
+            setTimeout(() => {
+              const notesData = detectBeats(decodedBuffer);
+              analyzerBar.style.width = '100%';
+              setTimeout(() => resolve(notesData), 300);
+            }, 50);
+          }, (err) => {
+            alert('音声デコードに失敗しました。ファイルが破損している可能性があります。');
+            analyzerOverlay.classList.remove('show');
+          });
+        });
+      }
+
+      function detectBeats(buffer) {
+        // Extract mono channel
+        const channelData = buffer.getChannelData(0);
+        const sampleRate = buffer.sampleRate;
+        
+        // Frame processing parameters
+        // 2048 samples frame is roughly 46ms at 44.1kHz
+        const frameSize = 2048;
+        const hopSize = 1024; // 50% overlap
+        const numFrames = Math.floor((channelData.length - frameSize) / hopSize);
+        
+        const energies = new Float32Array(numFrames);
+        
+        // 1. Calculate energy for each frame
+        for (let i = 0; i < numFrames; i++) {
+          const start = i * hopSize;
+          let sum = 0;
+          for (let j = 0; j < frameSize; j++) {
+            const val = channelData[start + j];
+            sum += val * val;
+          }
+          energies[i] = Math.sqrt(sum / frameSize);
+        }
+        
+        // 2. Dynamic threshold peak detection (Onset detection)
+        // Compare current frame energy with local average energy (neighborhood window)
+        const notes = [];
+        const windowSize = 21; // roughly 1 second neighborhood (10 frames before, 10 frames after)
+        const halfWin = Math.floor(windowSize / 2);
+        
+        // Adjust threshold constants based on selected difficulty
+        let multiplier = 1.45; // normal threshold ratio
+        let debounceTime = 0.18; // min interval (seconds) between notes
+        
+        if (selectedDiff === 'easy') {
+          multiplier = 1.65; // higher threshold = fewer notes
+          debounceTime = 0.28;
+        } else if (selectedDiff === 'hard') {
+          multiplier = 1.30; // lower threshold = more notes
+          debounceTime = 0.12;
+        }
+
+        let lastNoteTime = -999;
+        
+        for (let i = halfWin; i < numFrames - halfWin; i++) {
+          const currentEnergy = energies[i];
+          
+          // Calculate local average
+          let localSum = 0;
+          for (let w = -halfWin; w <= halfWin; w++) {
+            localSum += energies[i + w];
+          }
+          const localAverage = localSum / windowSize;
+          
+          const time = (i * hopSize) / sampleRate;
+
+          // Peak criteria: 
+          // 1. Energy is greater than local average * multiplier
+          // 2. Energy is a local maximum compared to immediate neighbors
+          if (currentEnergy > localAverage * multiplier &&
+              currentEnergy > energies[i - 1] && 
+              currentEnergy > energies[i + 1]) {
+            
+            // Check debounce interval
+            if (time - lastNoteTime >= debounceTime) {
+              // Assign to a lane (pattern logic)
+              let lane = 0;
+              if (notes.length > 0) {
+                const prev = notes[notes.length - 1];
+                // Pattern variations: change lane or step
+                if (Math.random() > 0.4) {
+                  lane = (prev.lane + (Math.random() > 0.5 ? 1 : 3)) % 4; // jump to adjacent lane
+                } else {
+                  lane = Math.floor(Math.random() * 4);
+                }
+              } else {
+                lane = Math.floor(Math.random() * 4);
+              }
+
+              notes.push({
+                time: time,
+                lane: lane,
+                hit: false
+              });
+              lastNoteTime = time;
+            }
+          }
+        }
+        
+        return notes;
+      }
+
+      // ==========================================
+      // GAMEPLAY LOGIC AND RENDER
+      // ==========================================
+      startGameBtn.addEventListener('click', () => {
+        // Initialize/Resume AudioContext synchronously on user gesture
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+
+        if (selectedSource === 'upload') {
+          if (!uploadedFile) {
+            alert('MP3ファイルをアップロードしてください。');
+            return;
+          }
+          
+          analyzerOverlay.classList.add('show');
+          analyzerStatus.textContent = 'ファイルを読み込み中...';
+          analyzerBar.style.width = '10%';
+          
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const arrayBuf = e.target.result;
+            processAudioBuffer(arrayBuf, uploadedFile.name);
+          };
+          reader.readAsArrayBuffer(uploadedFile);
+        } else {
+          // Preset loaded
+          const idx = parseInt(selectedSource.split('_')[1]);
+          const preset = validPresets[idx];
+          
+          analyzerOverlay.classList.add('show');
+          analyzerStatus.textContent = '公式楽曲を読み込み中...';
+          analyzerBar.style.width = '10%';
+          
+          if (preset.url.startsWith('data:')) {
+            setTimeout(() => {
+              try {
+                const arrayBuf = base64ToArrayBuffer(preset.url);
+                processAudioBuffer(arrayBuf, preset.title);
+              } catch (err) {
+                console.error(err);
+                alert('公式曲データのデコードに失敗しました。');
+                analyzerOverlay.classList.remove('show');
+              }
+            }, 50);
+          } else {
+            fetch(preset.url)
+              .then(res => {
+                analyzerBar.style.width = '30%';
+                return res.arrayBuffer();
+              })
+              .then(arrayBuf => {
+                processAudioBuffer(arrayBuf, preset.title);
+              })
+              .catch(err => {
+                console.error(err);
+                alert('公式曲データの取得に失敗しました。');
+                analyzerOverlay.classList.remove('show');
+              });
+          }
+        }
+      });
+
+      function processAudioBuffer(arrayBuf, songName) {
+        analyzerStatus.textContent = '音声データをデコード中...';
+        analyzerBar.style.width = '30%';
+
+        audioCtx.decodeAudioData(arrayBuf, (decodedBuffer) => {
+          decodedAudioBuffer = decodedBuffer;
+          analyzerStatus.textContent = 'リズムとテンポを解析中...';
+          analyzerBar.style.width = '60%';
+
+          setTimeout(() => {
+            const notesData = detectBeats(decodedBuffer);
+            analyzerBar.style.width = '100%';
+            setTimeout(() => {
+              setupAndStartGame(notesData, songName);
+            }, 300);
+          }, 50);
+        }, (err) => {
+          console.error('Decode error:', err);
+          alert('音声デコードに失敗しました。対応していない形式の可能性があります。');
+          analyzerOverlay.classList.remove('show');
+        });
+      }
+
+      function setupAndStartGame(notesData, songName) {
+        // Close overlays
+        analyzerOverlay.classList.remove('show');
+        lobbyContainer.classList.add('hide');
+        
+        // Initialize Game Stats
+        score = 0;
+        combo = 0;
+        maxCombo = 0;
+        counts = { perfect: 0, great: 0, good: 0, miss: 0 };
+        hudScore.textContent = '0000000';
+        hudCombo.style.opacity = '0';
+        
+        notes = notesData;
+        scoreAnims = [];
+        particleEffects = [];
+        hitFeedback = [false, false, false, false];
+
+        audioDuration = decodedAudioBuffer.duration;
+
+        // Create buffer source node for playback
+        sourceNode = audioCtx.createBufferSource();
+        sourceNode.buffer = decodedAudioBuffer;
+        sourceNode.connect(audioCtx.destination);
+
+        // Handle song completion
+        sourceNode.onended = () => {
+          if (gameActive) {
+            setTimeout(() => {
+              finishGame(songName);
+            }, 1000);
+          }
+        };
+
+        // Start playback using AudioContext timeline
+        sourceNode.start(0);
+        audioStartTime = audioCtx.currentTime;
+        gameActive = true;
+        
+        resizeCanvas();
+        requestAnimationFrame(gameLoop);
+      }
+
+      function quitGame() {
+        gameActive = false;
+        if (sourceNode) {
+          try {
+            sourceNode.stop();
+          } catch (e) {}
+          sourceNode = null;
+        }
+        lobbyContainer.classList.remove('hide');
+        resultContainer.classList.remove('show');
+      }
+
+      quitBtn.addEventListener('click', quitGame);
+
+      function finishGame(songName) {
+        gameActive = false;
+        if (sourceNode) {
+          try {
+            sourceNode.stop();
+          } catch (e) {}
+          sourceNode = null;
+        }
+        
+        // Calculate accuracy
+        const totalNotes = counts.perfect + counts.great + counts.good + counts.miss;
+        let accuracy = 0;
+        if (totalNotes > 0) {
+          accuracy = Math.round(((counts.perfect * 100 + counts.great * 80 + counts.good * 50) / totalNotes));
+        }
+
+        // Show results
+        resultSongName.textContent = songName;
+        resultScoreVal.textContent = String(score).padStart(7, '0');
+        resultPerfect.textContent = counts.perfect;
+        resultGreat.textContent = counts.great;
+        resultGood.textContent = counts.good;
+        resultMiss.textContent = counts.miss;
+        resultMaxCombo.textContent = maxCombo;
+        resultAccuracy.textContent = accuracy + '%';
+        
+        resultContainer.classList.add('show');
+      }
+
+      retryBtn.addEventListener('click', () => {
+        resultContainer.classList.remove('show');
+        // Restart from current setup
+        startGameBtn.click();
+      });
+
+      lobbyBtn.addEventListener('click', () => {
+        resultContainer.classList.remove('show');
+        lobbyContainer.classList.remove('hide');
+      });
+
+      // ==========================================
+      // INPUT HANDLING (Mobile Touch & PC Keys)
+      // ==========================================
+      
+      // PC Keyboard binds
+      const keyMap = { 'd': 0, 'f': 1, 'j': 2, 'k': 3, 'D': 0, 'F': 1, 'J': 2, 'K': 3 };
+      window.addEventListener('keydown', (e) => {
+        if (!gameActive) return;
+        const lane = keyMap[e.key];
+        if (lane !== undefined) {
+          handleInput(lane);
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (!gameActive) return;
+        const lane = keyMap[e.key];
+        if (lane !== undefined) {
+          hitFeedback[lane] = false;
+        }
+      });
+
+      // Mobile Touch Handling (Fast, low-latency, prevents scrolling/zoom)
+      const touchZones = [
+        document.getElementById('zone-0'),
+        document.getElementById('zone-1'),
+        document.getElementById('zone-2'),
+        document.getElementById('zone-3')
+      ];
+
+      touchZones.forEach((zone, idx) => {
+        // Touch Start (Note Tap)
+        zone.addEventListener('touchstart', (e) => {
+          e.preventDefault(); // Stop double-tap zoom and scrolling
+          if (!gameActive) return;
+          handleInput(idx);
+        });
+
+        zone.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          if (!gameActive) return;
+          hitFeedback[idx] = false;
+        });
+      });
+
+      function handleInput(lane) {
+        if (!audioCtx || !decodedAudioBuffer || !gameActive) return;
+        
+        const currentTime = audioCtx.currentTime - audioStartTime;
+        hitFeedback[lane] = true;
+
+        // Find the nearest note in the lane that has not been hit or missed
+        let nearestNote = null;
+        let minDiff = 999;
+        
+        for (let i = 0; i < notes.length; i++) {
+          const note = notes[i];
+          if (note.lane === lane && !note.hit) {
+            const diff = Math.abs(note.time - currentTime);
+            // Limit judgment window to 0.25 seconds
+            if (diff < 0.25 && diff < minDiff) {
+              minDiff = diff;
+              nearestNote = note;
+            }
+          }
+        }
+
+        if (nearestNote) {
+          nearestNote.hit = true;
+          
+          // Judge timing diff
+          let rating = 'MISS';
+          let scoreAdd = 0;
+          let ratingColor = '#ef4444';
+          
+          if (minDiff <= 0.05) {
+            rating = 'PERFECT';
+            scoreAdd = 1000;
+            counts.perfect++;
+            ratingColor = '#25f4ee';
+          } else if (minDiff <= 0.12) {
+            rating = 'GREAT';
+            scoreAdd = 700;
+            counts.great++;
+            ratingColor = '#a855f7';
+          } else if (minDiff <= 0.22) {
+            rating = 'GOOD';
+            scoreAdd = 400;
+            counts.good++;
+            ratingColor = '#ec4899';
+          } else {
+            rating = 'MISS';
+            counts.miss++;
+            ratingColor = '#ef4444';
+          }
+
+          if (rating !== 'MISS') {
+            combo++;
+            maxCombo = Math.max(maxCombo, combo);
+            score += scoreAdd;
+            
+            // Combo HUD flash animation
+            hudCombo.style.opacity = '1';
+            hudCombo.textContent = `${combo} COMBO`;
+            hudCombo.style.transform = 'scale(1.15)';
+            setTimeout(() => {
+              hudCombo.style.transform = 'scale(1.0)';
+            }, 100);
+
+            // Add particle particles
+            createTapParticles(lane, ratingColor);
+          } else {
+            combo = 0;
+            hudCombo.style.opacity = '0';
+          }
+
+          // Add feedback text animation
+          scoreAnims.push({
+            text: rating,
+            color: ratingColor,
+            x: (canvasWidth / 8) * (lane * 2 + 1),
+            y: judgmentLineY - 40,
+            alpha: 1.0,
+            scale: 1.2
+          });
+
+          // Refresh score HUD
+          hudScore.textContent = String(score).padStart(7, '0');
+        } else {
+          // Empty tap triggers feedback particles only
+          createTapParticles(lane, 'rgba(255,255,255,0.15)');
+        }
+      }
+
+      function createTapParticles(lane, color) {
+        const x = (canvasWidth / 8) * (lane * 2 + 1);
+        const y = judgmentLineY;
+        for (let i = 0; i < 15; i++) {
+          particleEffects.push({
+            x: x,
+            y: y,
+            vx: (Math.random() - 0.5) * 8,
+            vy: (Math.random() - 0.7) * 8,
+            size: Math.random() * 4 + 2,
+            color: color,
+            alpha: 1.0,
+            life: Math.random() * 20 + 10
+          });
+        }
+      }
+
+      // ==========================================
+      // MAIN GAME LOOP (RENDERING)
+      // ==========================================
+      function gameLoop() {
+        if (!gameActive || !audioCtx || !decodedAudioBuffer) return;
+
+        const currentTime = audioCtx.currentTime - audioStartTime;
+
+        // Auto end fallback check
+        if (currentTime >= audioDuration + 1.0) {
+          return;
+        }
+
+        // Clear canvas
+        ctx.fillStyle = '#030307';
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+        // Draw vertical lane dividers
+        const laneWidth = canvasWidth / 4;
+        ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+        ctx.lineWidth = 1;
+        for (let i = 1; i < 4; i++) {
+          ctx.beginPath();
+          ctx.moveTo(i * laneWidth, 0);
+          ctx.lineTo(i * laneWidth, canvasHeight);
+          ctx.stroke();
+        }
+
+        // Draw Lane Keys Feedback glow at bottom
+        for (let i = 0; i < 4; i++) {
+          if (hitFeedback[i]) {
+            const grad = ctx.createLinearGradient(i * laneWidth, canvasHeight, i * laneWidth, canvasHeight - 120);
+            grad.addColorStop(0, colors[i] + '40');
+            grad.addColorStop(1, colors[i] + '00');
+            ctx.fillStyle = grad;
+            ctx.fillRect(i * laneWidth, canvasHeight - 150, laneWidth, 150);
+          }
+        }
+
+        // Draw Target Line
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(0, judgmentLineY);
+        ctx.lineTo(canvasWidth, judgmentLineY);
+        ctx.stroke();
+
+        // Draw Target Circles
+        for (let i = 0; i < 4; i++) {
+          const x = laneWidth * (i + 0.5);
+          
+          // Outer neon circle
+          ctx.shadowBlur = hitFeedback[i] ? 15 : 5;
+          ctx.shadowColor = colors[i];
+          ctx.strokeStyle = colors[i];
+          ctx.lineWidth = hitFeedback[i] ? 4 : 2;
+          ctx.beginPath();
+          ctx.arc(x, judgmentLineY, noteRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          
+          // Inner core
+          ctx.fillStyle = hitFeedback[i] ? colors[i] + '30' : 'rgba(255, 255, 255, 0.02)';
+          ctx.beginPath();
+          ctx.arc(x, judgmentLineY, noteRadius - 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0; // Reset shadow glow
+
+        // Calculate visual note position based on time offset
+        // speedFactor: pixels per second speed
+        const speedFactor = scrollSpeed * 150; 
+
+        // Update and Draw Notes
+        for (let i = 0; i < notes.length; i++) {
+          const note = notes[i];
+          
+          // Check missed notes
+          if (!note.hit && (currentTime - note.time) > 0.25) {
+            note.hit = true; // Mark as processed
+            combo = 0;
+            hudCombo.style.opacity = '0';
+            counts.miss++;
+            
+            // Add MISS text animation
+            scoreAnims.push({
+              text: 'MISS',
+              color: '#ef4444',
+              x: laneWidth * (note.lane + 0.5),
+              y: judgmentLineY - 40,
+              alpha: 1.0,
+              scale: 1.0
+            });
+          }
+
+          // Render active notes coming down
+          if (!note.hit) {
+            const timeDiff = note.time - currentTime;
+            
+            // Render only notes that fit inside canvas window
+            if (timeDiff > -0.2 && timeDiff < 4.0) {
+              const x = laneWidth * (note.lane + 0.5);
+              const y = judgmentLineY - (timeDiff * speedFactor);
+
+
+              // Drawing note pill design
+              ctx.shadowBlur = 12;
+              ctx.shadowColor = colors[note.lane];
+              ctx.fillStyle = colors[note.lane];
+              ctx.beginPath();
+              ctx.arc(x, y, noteRadius - 2, 0, Math.PI * 2);
+              ctx.fill();
+
+              // White center core
+              ctx.fillStyle = '#ffffff';
+              ctx.beginPath();
+              ctx.arc(x, y, noteRadius - 8, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        }
+        ctx.shadowBlur = 0;
+
+        // Render particles
+        for (let i = particleEffects.length - 1; i >= 0; i--) {
+          const p = particleEffects[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.alpha = p.life > 10 ? 1.0 : p.life / 10;
+          p.life--;
+
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = p.alpha;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (p.life <= 0) {
+            particleEffects.splice(i, 1);
+          }
+        }
+        ctx.globalAlpha = 1.0; // Reset alpha
+
+        // Render feedback rating text (PERFECT / GREAT / MISS)
+        for (let i = scoreAnims.length - 1; i >= 0; i--) {
+          const anim = scoreAnims[i];
+          anim.y -= 0.8; // Float up
+          anim.alpha -= 0.02; // Fade out
+          
+          ctx.font = `italic 800 ${1.2 * anim.scale}rem var(--font-display)`;
+          ctx.textAlign = 'center';
+          ctx.fillStyle = anim.color;
+          ctx.globalAlpha = anim.alpha;
+          ctx.fillText(anim.text, anim.x, anim.y);
+
+          if (anim.alpha <= 0) {
+            scoreAnims.splice(i, 1);
+          }
+        }
+        ctx.globalAlpha = 1.0;
+
+        // Keep loop going
+        requestAnimationFrame(gameLoop);
+      }
+    });
+  </script>
+</body>
+</html>

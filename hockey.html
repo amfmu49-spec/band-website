@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A.M.F ARCADE - エアホッケー</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="style.css">
+  
+  <style>
+    .game-body {
+      background-color: #030305;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+    }
+    
+    .game-container {
+      max-width: 800px;
+      width: 100%;
+      text-align: center;
+      margin: 0 auto;
+    }
+    
+    .game-header {
+      margin-bottom: 20px;
+    }
+    
+    .game-title {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: 0.2rem;
+      background: linear-gradient(135deg, #fff 30%, var(--color-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 5px;
+      text-shadow: 0 0 20px rgba(236, 72, 153, 0.2);
+    }
+    
+    .game-instructions {
+      color: var(--color-text-secondary);
+      font-size: 0.88rem;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    /* Lobby Styling */
+    .lobby-panel {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 30px 20px;
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: 20px;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    
+    .lobby-subtitle {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 25px;
+      letter-spacing: 0.05rem;
+    }
+    
+    .char-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .char-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1.5px solid var(--color-border);
+      border-radius: 16px;
+      padding: 20px 10px;
+      cursor: pointer;
+      transition: var(--transition-bounce);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .char-card:hover {
+      border-color: var(--color-secondary);
+      background: rgba(236, 72, 153, 0.04);
+      transform: translateY(-5px);
+    }
+    
+    .char-card.selected {
+      border-color: var(--color-accent);
+      background: rgba(16, 185, 129, 0.05);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+    }
+    
+    .char-avatar-wrapper {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin-bottom: 12px;
+      border: 2.5px solid rgba(255, 255, 255, 0.1);
+      transition: border-color 0.3s;
+    }
+    
+    .char-card:hover .char-avatar-wrapper {
+      border-color: var(--color-secondary);
+    }
+    
+    .char-card.selected .char-avatar-wrapper {
+      border-color: var(--color-accent);
+    }
+    
+    .char-avatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .char-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    
+    .char-diff {
+      font-size: 0.75rem;
+      color: var(--color-accent);
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.1);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    
+    .char-diff.diff-2 {
+      color: var(--color-secondary);
+      background: rgba(236, 72, 153, 0.1);
+    }
+    
+    .char-diff.diff-3 {
+      color: var(--color-primary);
+      background: rgba(168, 85, 247, 0.1);
+    }
+    
+    .start-btn {
+      padding: 12px 40px;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 30px;
+      border: none;
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(135deg, var(--color-secondary), var(--color-accent));
+      box-shadow: 0 8px 20px rgba(236, 72, 153, 0.3);
+      transition: var(--transition-bounce);
+    }
+    
+    .start-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(236, 72, 153, 0.5);
+    }
+    
+    .start-btn:disabled {
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.2);
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Game Screen Panel */
+    .game-play-panel {
+      display: none;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+    
+    .hockey-board-wrapper {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(236, 72, 153, 0.1);
+      line-height: 0;
+    }
+    
+    #hockey-canvas {
+      background: #08080f;
+      border: 3px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      cursor: none; /* Hide cursor on canvas for mallet control */
+    }
+    
+    /* Side Stats Panel */
+    .stats-panel {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: 16px;
+      padding: 20px;
+      min-width: 200px;
+      text-align: left;
+      backdrop-filter: blur(10px);
+    }
+    
+    .stats-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+    }
+    
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+    }
+    
+    .stat-label {
+      color: var(--color-text-secondary);
+    }
+    
+    .stat-value {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Overlay screens */
+    .overlay-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(5, 5, 7, 0.85);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    
+    .overlay-screen.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .overlay-title {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+    
+    .overlay-desc {
+      color: var(--color-text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 25px;
+      padding: 0 20px;
+      line-height: 1.5;
+    }
+    
+    .overlay-btn {
+      padding: 10px 25px;
+      border-radius: 20px;
+      border: 1px solid var(--color-border);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #fff;
+      background: rgba(255,255,255,0.03);
+      transition: var(--transition-bounce);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .overlay-btn:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: #fff;
+      transform: translateY(-2px);
+    }
+    
+    .overlay-btn-primary {
+      background: linear-gradient(135deg, var(--color-secondary), var(--color-accent));
+      border: none;
+      box-shadow: 0 4px 15px rgba(236,72,153,0.3);
+    }
+    
+    .overlay-btn-primary:hover {
+      box-shadow: 0 8px 20px rgba(236,72,153,0.5);
+    }
+    
+    @keyframes pulseText {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    @keyframes rotateDisc {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="game-body">
+
+  <!-- Glowing Background Orbs -->
+  <div class="glow-orb orb-1" style="background: rgba(236, 72, 153, 0.08);"></div>
+  <div class="glow-orb orb-2" style="background: rgba(168, 85, 247, 0.08);"></div>
+
+  <div class="game-container">
+    
+    <header class="game-header">
+      <h1 class="game-title">A.M.F HOCKEY</h1>
+      <p class="game-instructions" id="page-subtitle">
+        対戦相手を選択し、サイバーエアホッケーバトルをスタートしましょう！
+      </p>
+    </header>
+
+    <!-- Now Playing BGM Credit Container -->
+    <div id="now-playing-container" style="display: none; justify-content: center; align-items: center; gap: 8px; margin: -10px auto 25px auto; padding: 8px 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 30px; backdrop-filter: blur(10px); max-width: fit-content; box-shadow: 0 5px 15px rgba(0,0,0,0.2), inset 0 0 10px rgba(255,255,255,0.02); opacity: 0; transition: opacity 0.5s ease; z-index: 5; flex-wrap: wrap;">
+      <span style="display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; color: var(--color-secondary); animation: rotateDisc 3s linear infinite; flex-shrink: 0;">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      </span>
+      <span style="font-size: 0.7rem; letter-spacing: 0.12rem; font-weight: 700; color: var(--color-secondary); text-transform: uppercase; flex-shrink: 0;">BGM:</span>
+      <span style="font-size: 0.82rem; color: #fff; font-weight: 500; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+        <a id="music-title-link" href="" target="_blank" style="color: #fff; text-decoration: none; border-bottom: 1.5px dashed rgba(255,255,255,0.3); transition: border-color 0.2s, color 0.2s; white-space: nowrap;">楽曲名</a>
+        <span style="color: var(--color-text-secondary); font-size: 0.75rem; font-weight: normal; margin: 0 1px;">by</span>
+        <a id="music-artist-link" href="" target="_blank" style="color: var(--color-secondary); text-decoration: none; border-bottom: 1.5px dashed rgba(236,72,153,0.3); transition: border-color 0.2s, color 0.2s; white-space: nowrap;">アーティスト名</a>
+      </span>
+    </div>
+
+    <!-- Lobby Setup Card -->
+    <div id="lobby-panel" class="lobby-panel">
+      <h2 class="lobby-subtitle">対戦相手（OPPONENT）を選択してください</h2>
+      
+      <div id="char-grid" class="char-grid">
+        <!-- Dynamically populated character cards -->
+      </div>
+      
+      <button id="start-game-btn" class="start-btn" disabled>GAME START</button>
+      
+      <div style="margin-top: 25px;">
+        <a href="index.html" class="overlay-btn" style="padding: 8px 20px; font-size: 0.8rem;">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="transform: scaleX(-1);">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+          サイトに戻る
+        </a>
+      </div>
+    </div>
+
+    <!-- Game Screen Panel (Hidden initially) -->
+    <div id="game-play-panel" class="game-play-panel">
+      
+      <div class="hockey-board-wrapper">
+        <canvas id="hockey-canvas" width="400" height="600"></canvas>
+        
+        <!-- Pause/Start overlay -->
+        <div id="ready-overlay" class="overlay-screen show">
+          <h2 class="overlay-title" style="animation: pulseText 1.5s infinite ease-in-out;">READY?</h2>
+          <p class="overlay-desc">Canvas内をクリック（タップ）すると試合が始まります。<br>下側のマレットをドラッグしてパックを打ち返してください。</p>
+          <button id="ready-start-btn" class="overlay-btn overlay-btn-primary">試合開始</button>
+        </div>
+
+        <!-- Goal Result Overlay -->
+        <div id="goal-overlay" class="overlay-screen">
+          <h2 id="goal-text" class="overlay-title" style="font-size: 3rem; text-shadow: 0 0 30px rgba(255,255,255,0.4);">GOAL!!</h2>
+          <p id="goal-scorer" class="overlay-desc" style="font-size: 1.1rem; font-weight: 600; color: #fff;"></p>
+        </div>
+
+        <!-- Final Result Screen -->
+        <div id="result-overlay" class="overlay-screen">
+          <h2 id="result-title" class="overlay-title" style="font-size: 2.8rem;">YOU WIN!</h2>
+          <p id="result-score" class="overlay-desc" style="font-size: 1.1rem; color: #fff;"></p>
+          <div style="display: flex; gap: 12px;">
+            <button id="restart-btn" class="overlay-btn overlay-btn-primary">もう一度対戦</button>
+            <button id="exit-btn" class="overlay-btn">ロビーに戻る</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats panel beside canvas -->
+      <div class="stats-panel">
+        <h3 class="stats-title">MATCH INFO</h3>
+        <div class="stat-row">
+          <span class="stat-label">対戦相手:</span>
+          <span class="stat-value" id="stats-opponent-name">---</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">難易度:</span>
+          <span class="stat-value" id="stats-opponent-diff">---</span>
+        </div>
+        
+        <h3 class="stats-title" style="margin-top: 20px;">CONTROLS</h3>
+        <p style="color: var(--color-text-secondary); font-size: 0.8rem; line-height: 1.5; margin: 0;">
+          ・マウスまたはタッチドラッグで下側の赤いマレットを動かします。<br>
+          ・センターラインより上側（相手陣地）には侵入できません。<br>
+          ・先に7点を獲得したプレイヤーの勝利となります。
+        </p>
+        <div style="margin-top: 25px; text-align: center;">
+          <button id="abort-btn" class="overlay-btn" style="width: 100%; justify-content: center; font-size: 0.8rem; padding: 8px 15px;">一時中断して戻る</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Config file -->
+  <script src="config.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Get configuration with cache breaking
+      let config = null;
+      const localData = localStorage.getItem('band_config_data');
+      const fileConfig = window.BAND_CONFIG;
+      
+      if (localData) {
+        try {
+          const parsedLocal = JSON.parse(localData);
+          if (fileConfig && fileConfig.lastUpdated && parsedLocal.lastUpdated && fileConfig.lastUpdated > parsedLocal.lastUpdated) {
+            localStorage.removeItem('band_config_data');
+            config = fileConfig;
+          } else if (fileConfig && fileConfig.lastUpdated && !parsedLocal.lastUpdated) {
+            localStorage.removeItem('band_config_data');
+            config = fileConfig;
+          } else {
+            config = parsedLocal;
+          }
+        } catch(e) {
+          config = fileConfig;
+        }
+      } else {
+        config = fileConfig;
+      }
+
+      // 2. Setup characters with fallback (Luna, Ren, Yuki)
+      let characters = [];
+      const defaultChars = [
+        {
+          name: 'Luna',
+          difficulty: '1',
+          image: 'assets/luna.png',
+          music: '',
+          musicDetail: { title: 'Luna Melody', titleLink: '', artist: 'A.M.F Luna', artistLink: '' }
+        },
+        {
+          name: 'Ren',
+          difficulty: '2',
+          image: 'assets/ren.png',
+          music: '',
+          musicDetail: { title: 'Ren Shreds', titleLink: '', artist: 'A.M.F Ren', artistLink: '' }
+        },
+        {
+          name: 'Yuki',
+          difficulty: '3',
+          image: 'assets/yuki.png',
+          music: '',
+          musicDetail: { title: 'Yuki Beats', titleLink: '', artist: 'A.M.F Yuki', artistLink: '' }
+        }
+      ];
+
+      if (config && config.hockeyCharacters && Array.isArray(config.hockeyCharacters)) {
+        // Load defined characters, fallback to default for indices that are not set
+        for (let i = 0; i < 3; i++) {
+          const char = config.hockeyCharacters[i];
+          const hasName = char && char.name && char.name.trim() !== '';
+          const hasImg = char && char.image && char.image.trim() !== '';
+          
+          if (hasName || hasImg) {
+            // Re-construct with fallbacks for incomplete fields
+            characters.push({
+              name: char.name || `Opponent ${i+1}`,
+              difficulty: char.difficulty || '1',
+              image: char.image || 'assets/avatar.png',
+              music: char.music || '',
+              musicDetail: char.musicDetail || { title: '', titleLink: '', artist: '', artistLink: '' }
+            });
+          } else {
+            characters.push(defaultChars[i]);
+          }
+        }
+      } else {
+        characters = defaultChars;
+      }
+
+      // 3. Render Lobby Options
+      const charGrid = document.getElementById('char-grid');
+      const startBtn = document.getElementById('start-game-btn');
+      let selectedCharIdx = -1;
+
+      function renderLobby() {
+        charGrid.innerHTML = '';
+        characters.forEach((char, idx) => {
+          const card = document.createElement('div');
+          card.className = `char-card ${selectedCharIdx === idx ? 'selected' : ''}`;
+          card.setAttribute('data-index', idx);
+          
+          const diffText = char.difficulty === '3' ? '★3 (HARD)' : (char.difficulty === '2' ? '★2 (NORMAL)' : '★1 (EASY)');
+          const diffClass = char.difficulty === '3' ? 'diff-3' : (char.difficulty === '2' ? 'diff-2' : '');
+          
+          card.innerHTML = `
+            <div class="char-avatar-wrapper">
+              <img src="${char.image}" alt="${char.name}" class="char-avatar">
+            </div>
+            <div class="char-name">${char.name}</div>
+            <div class="char-diff ${diffClass}">${diffText}</div>
+          `;
+          
+          card.addEventListener('click', () => {
+            selectedCharIdx = idx;
+            document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            startBtn.disabled = false;
+          });
+          
+          charGrid.appendChild(card);
+        });
+      }
+      renderLobby();
+
+      // Audio manager states
+      let bgmAudio = null;
+      let fadeInterval = null;
+      let loopTimeout = null;
+      const targetVolume = 0.3;
+      let currentMusicData = '';
+      let audioStartedByUser = false;
+
+      function playBGM(musicData) {
+        currentMusicData = musicData;
+        if (loopTimeout) clearTimeout(loopTimeout);
+        
+        if (!musicData) {
+          if (bgmAudio) {
+            fadeOutAndStop(bgmAudio);
+          }
+          return;
+        }
+
+        if (bgmAudio) {
+          fadeOutAndSwitch(musicData);
+        } else {
+          startNewBGM(musicData);
+        }
+      }
+
+      function startNewBGM(musicData) {
+        bgmAudio = new Audio(musicData);
+        bgmAudio.loop = true;
+        bgmAudio.volume = 0;
+        
+        setup60SecLoop();
+        
+        const playPromise = bgmAudio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            audioStartedByUser = true;
+            fadeIn(bgmAudio);
+          }).catch(err => {
+            console.log("Autoplay blocked. BGM will start on paddle click.");
+            audioStartedByUser = false;
+          });
+        }
+      }
+
+      function fadeIn(audio) {
+        if (fadeInterval) clearInterval(fadeInterval);
+        let vol = audio.volume;
+        fadeInterval = setInterval(() => {
+          if (!audio || audio.paused) {
+            clearInterval(fadeInterval);
+            return;
+          }
+          vol += 0.02;
+          if (vol >= targetVolume) {
+            vol = targetVolume;
+            clearInterval(fadeInterval);
+          }
+          audio.volume = vol;
+        }, 100);
+      }
+
+      function fadeOutAndStop(audio) {
+        if (fadeInterval) clearInterval(fadeInterval);
+        let vol = audio.volume;
+        fadeInterval = setInterval(() => {
+          vol -= 0.03;
+          if (vol <= 0) {
+            vol = 0;
+            audio.pause();
+            clearInterval(fadeInterval);
+          }
+          audio.volume = vol;
+        }, 50);
+      }
+
+      function fadeOutAndSwitch(newMusicData) {
+        if (fadeInterval) clearInterval(fadeInterval);
+        let vol = bgmAudio.volume;
+        fadeInterval = setInterval(() => {
+          vol -= 0.03;
+          if (vol <= 0) {
+            vol = 0;
+            bgmAudio.pause();
+            clearInterval(fadeInterval);
+            bgmAudio = null;
+            startNewBGM(newMusicData);
+          }
+          if (bgmAudio) bgmAudio.volume = vol;
+        }, 50);
+      }
+
+      function setup60SecLoop() {
+        if (loopTimeout) clearTimeout(loopTimeout);
+        loopTimeout = setTimeout(() => {
+          if (bgmAudio && !bgmAudio.paused) {
+            fadeOutAndRestart();
+          }
+        }, 60000);
+      }
+
+      function fadeOutAndRestart() {
+        if (fadeInterval) clearInterval(fadeInterval);
+        let vol = bgmAudio.volume;
+        fadeInterval = setInterval(() => {
+          vol -= 0.03;
+          if (vol <= 0) {
+            vol = 0;
+            clearInterval(fadeInterval);
+            if (bgmAudio) {
+              bgmAudio.currentTime = 0;
+              fadeIn(bgmAudio);
+              setup60SecLoop();
+            }
+          }
+          if (bgmAudio) bgmAudio.volume = vol;
+        }, 50);
+      }
+
+      function tryTriggerBGM() {
+        if (bgmAudio && !audioStartedByUser && currentMusicData) {
+          bgmAudio.play().then(() => {
+            audioStartedByUser = true;
+            fadeIn(bgmAudio);
+          }).catch(e => console.log(e));
+        }
+      }
+
+      // 4. Hockey Game Physics & Control logic
+      const canvas = document.getElementById('hockey-canvas');
+      const ctx = canvas.getContext('2d');
+      
+      let isPlaying = false;
+      let opponentImg = new Image();
+      let playerScore = 0;
+      let aiScore = 0;
+      
+      // Game elements
+      let puck = { x: 200, y: 300, vx: 0, vy: 0, radius: 13 };
+      let playerMallet = { x: 200, y: 500, vx: 0, vy: 0, radius: 28 };
+      let aiMallet = { x: 200, y: 100, vx: 0, vy: 0, radius: 28 };
+      
+      const tableWidth = canvas.width;
+      const tableHeight = canvas.height;
+      const goalWidth = 140;
+      const goalStart = (tableWidth - goalWidth) / 2;
+      const goalEnd = goalStart + goalWidth;
+      const maxSpeed = 15; // Speed cap on puck to avoid glitches
+      
+      let particles = [];
+      let lastTime = 0;
+      
+      // Opponent Image preloader
+      function loadOpponentImage(src) {
+        opponentImg = new Image();
+        opponentImg.src = src || 'assets/avatar.png';
+      }
+      
+      function addParticles(x, y, color = '#ec4899', count = 12) {
+        for (let i = 0; i < count; i++) {
+          particles.push({
+            x: x,
+            y: y,
+            vx: (Math.random() - 0.5) * 8,
+            vy: (Math.random() - 0.5) * 8,
+            radius: Math.random() * 3 + 1,
+            color: color,
+            alpha: 1,
+            decay: Math.random() * 0.03 + 0.01
+          });
+        }
+      }
+
+      // Reset puck position after goals
+      function resetPuck(serveToPlayer = true) {
+        puck.x = tableWidth / 2;
+        puck.y = serveToPlayer ? 400 : 200;
+        puck.vx = 0;
+        puck.vy = 0;
+        
+        playerMallet.x = tableWidth / 2;
+        playerMallet.y = 500;
+        playerMallet.vx = 0;
+        playerMallet.vy = 0;
+        
+        aiMallet.x = tableWidth / 2;
+        aiMallet.y = 100;
+        aiMallet.vx = 0;
+        aiMallet.vy = 0;
+      }
+      
+      // Setup match info sidebar
+      function setupStatsPanel(char) {
+        document.getElementById('stats-opponent-name').textContent = char.name;
+        
+        const diffText = char.difficulty === '3' ? '★3 (HARD)' : (char.difficulty === '2' ? '★2 (NORMAL)' : '★1 (EASY)');
+        const diffValue = document.getElementById('stats-opponent-diff');
+        diffValue.textContent = diffText;
+        diffValue.className = 'stat-value';
+        
+        if (char.difficulty === '3') diffValue.style.color = 'var(--color-primary)';
+        else if (char.difficulty === '2') diffValue.style.color = 'var(--color-secondary)';
+        else diffValue.style.color = 'var(--color-accent)';
+      }
+      
+      // Setup credits panel
+      function setupCreditsPanel(char) {
+        const nowPlaying = document.getElementById('now-playing-container');
+        const detail = char.musicDetail;
+        const hasTitle = detail && detail.title && detail.title.trim() !== '';
+        const hasArtist = detail && detail.artist && detail.artist.trim() !== '';
+        
+        if ((hasTitle || hasArtist) && char.music) {
+          const titleLink = document.getElementById('music-title-link');
+          const artistLink = document.getElementById('music-artist-link');
+          
+          titleLink.textContent = hasTitle ? detail.title : 'Unknown Track';
+          artistLink.textContent = hasArtist ? detail.artist : 'Unknown Artist';
+          
+          if (detail.titleLink && detail.titleLink.trim() !== '') {
+            titleLink.href = detail.titleLink;
+            titleLink.style.pointerEvents = 'auto';
+            titleLink.style.borderBottom = '1.5px dashed rgba(255,255,255,0.4)';
+            titleLink.style.cursor = 'pointer';
+          } else {
+            titleLink.removeAttribute('href');
+            titleLink.style.pointerEvents = 'none';
+            titleLink.style.borderBottom = 'none';
+            titleLink.style.cursor = 'default';
+          }
+          
+          if (detail.artistLink && detail.artistLink.trim() !== '') {
+            artistLink.href = detail.artistLink;
+            artistLink.style.pointerEvents = 'auto';
+            artistLink.style.borderBottom = '1.5px dashed rgba(236,72,153,0.4)';
+            artistLink.style.cursor = 'pointer';
+          } else {
+            artistLink.removeAttribute('href');
+            artistLink.style.pointerEvents = 'none';
+            artistLink.style.borderBottom = 'none';
+            artistLink.style.cursor = 'default';
+          }
+          
+          nowPlaying.style.display = 'inline-flex';
+          void nowPlaying.offsetWidth;
+          nowPlaying.style.opacity = '1';
+        } else {
+          nowPlaying.style.opacity = '0';
+          setTimeout(() => {
+            if (nowPlaying.style.opacity === '0') {
+              nowPlaying.style.display = 'none';
+            }
+          }, 500);
+        }
+      }
+
+      // Lobby Start Click
+      startBtn.addEventListener('click', () => {
+        if (selectedCharIdx === -1) return;
+        
+        const char = characters[selectedCharIdx];
+        loadOpponentImage(char.image);
+        setupStatsPanel(char);
+        setupCreditsPanel(char);
+        
+        // UI slide
+        document.getElementById('lobby-panel').style.display = 'none';
+        document.getElementById('game-play-panel').style.display = 'flex';
+        document.getElementById('page-subtitle').textContent = `SCORE: YOU ( 0 )  VS  ${char.name.toUpperCase()} ( 0 )`;
+        
+        playerScore = 0;
+        aiScore = 0;
+        
+        // Ready up screen
+        document.getElementById('ready-overlay').classList.add('show');
+        document.getElementById('result-overlay').classList.remove('show');
+        
+        playBGM(char.music);
+        resetPuck(true);
+        drawTable();
+      });
+
+      // Mouse and touch bindings for Player Mallet
+      let mouseX = 200;
+      let mouseY = 500;
+      
+      function updateMalletPosition(x, y) {
+        // Constrain mallet position to player's half
+        playerMallet.x = Math.max(playerMallet.radius, Math.min(tableWidth - playerMallet.radius, x));
+        playerMallet.y = Math.max(tableHeight / 2 + playerMallet.radius, Math.min(tableHeight - playerMallet.radius, y));
+      }
+      
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        // Scale mouse coords to fit canvas resolution
+        mouseX = (e.clientX - rect.left) * (tableWidth / rect.width);
+        mouseY = (e.clientY - rect.top) * (tableHeight / rect.height);
+      });
+      
+      canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault(); // Stop scrolling page while playing
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        mouseX = (touch.clientX - rect.left) * (tableWidth / rect.width);
+        mouseY = (touch.clientY - rect.top) * (tableHeight / rect.height);
+      }, { passive: false });
+
+      // Start gameplay match
+      function startMatch() {
+        isPlaying = true;
+        document.getElementById('ready-overlay').classList.remove('show');
+        lastTime = performance.now();
+        requestAnimationFrame(gameLoop);
+      }
+      
+      document.getElementById('ready-start-btn').addEventListener('click', () => {
+        tryTriggerBGM();
+        startMatch();
+      });
+      canvas.addEventListener('click', () => {
+        if (!isPlaying && document.getElementById('ready-overlay').classList.contains('show')) {
+          tryTriggerBGM();
+          startMatch();
+        }
+      });
+      canvas.addEventListener('touchstart', () => {
+        if (!isPlaying && document.getElementById('ready-overlay').classList.contains('show')) {
+          tryTriggerBGM();
+          startMatch();
+        }
+      });
+
+      // AI opponent controller
+      function runOpponentAI(char) {
+        const diff = parseInt(char.difficulty || '1');
+        let speed = 3;
+        let lag = 0.05;
+        let chaseRangeY = tableHeight / 2; // only chase if puck is on AI's half
+        
+        if (diff === 3) {
+          speed = 9.5;
+          lag = 0.22;
+          chaseRangeY = tableHeight - 200; // Aggressive AI, chases deep
+        } else if (diff === 2) {
+          speed = 5.5;
+          lag = 0.12;
+          chaseRangeY = tableHeight / 2 + 100;
+        } else {
+          speed = 3.2;
+          lag = 0.07;
+        }
+        
+        // Targeted point for AI Mallet to move towards
+        let targetX = tableWidth / 2;
+        let targetY = 100;
+        
+        // If puck is on AI's half or AI decides to chase
+        if (puck.y < chaseRangeY) {
+          targetX = puck.x;
+          // Slowly push forward or retreat
+          if (puck.y < aiMallet.y && Math.abs(puck.x - aiMallet.x) < 50) {
+            targetY = puck.y - 10; // try to hit puck forward
+          } else {
+            targetY = Math.min(tableHeight / 2 - aiMallet.radius, puck.y - 15);
+          }
+        } else {
+          // Retreat back to defense position
+          targetX = tableWidth / 2;
+          targetY = 80;
+        }
+        
+        // Constrain target positions
+        targetX = Math.max(aiMallet.radius, Math.min(tableWidth - aiMallet.radius, targetX));
+        targetY = Math.max(aiMallet.radius, Math.min(tableHeight / 2 - aiMallet.radius, targetY));
+        
+        // Move towards target smoothly
+        let dx = targetX - aiMallet.x;
+        let dy = targetY - aiMallet.y;
+        
+        aiMallet.vx = dx * lag * speed;
+        aiMallet.vy = dy * lag * speed;
+        
+        // Cap AI Mallet speed
+        let aiSpeed = Math.sqrt(aiMallet.vx * aiMallet.vx + aiMallet.vy * aiMallet.vy);
+        if (aiSpeed > speed) {
+          aiMallet.vx = (aiMallet.vx / aiSpeed) * speed;
+          aiMallet.vy = (aiMallet.vy / aiSpeed) * speed;
+        }
+        
+        aiMallet.x += aiMallet.vx;
+        aiMallet.y += aiMallet.vy;
+      }
+
+      // Check collision between pack and mallet
+      function checkMalletCollision(mallet) {
+        let dx = puck.x - mallet.x;
+        let dy = puck.y - mallet.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+        let minDist = puck.radius + mallet.radius;
+        
+        if (dist < minDist) {
+          // Push puck outside of mallet range
+          let overlap = minDist - dist;
+          let nx = dx / dist;
+          let ny = dy / dist;
+          
+          puck.x += nx * overlap;
+          puck.y += ny * overlap;
+          
+          // Calculate bounce momentum
+          let rvx = puck.vx - mallet.vx;
+          let rvy = puck.vy - mallet.vy;
+          
+          let velAlongNormal = rvx * nx + rvy * ny;
+          
+          // Only collide if objects are moving towards each other
+          if (velAlongNormal < 0) {
+            let restitution = 0.82; // Bouncy
+            let impulse = -(1 + restitution) * velAlongNormal;
+            
+            puck.vx += impulse * nx;
+            puck.vy += impulse * ny;
+            
+            // Add mallet push momentum
+            puck.vx += mallet.vx * 0.45;
+            puck.vy += mallet.vy * 0.45;
+            
+            // Limit max speed
+            let pSpeed = Math.sqrt(puck.vx * puck.vx + puck.vy * puck.vy);
+            if (pSpeed > maxSpeed) {
+              puck.vx = (puck.vx / pSpeed) * maxSpeed;
+              puck.vy = (puck.vy / pSpeed) * maxSpeed;
+            }
+            
+            // Spark effect!
+            const hitColor = mallet === playerMallet ? '#25f4ee' : '#ec4899';
+            addParticles(puck.x - nx * puck.radius, puck.y - ny * puck.radius, hitColor, 8);
+          }
+        }
+      }
+
+      // Main core physics engine loop
+      function updatePhysics(dt) {
+        if (selectedCharIdx === -1) return;
+        const char = characters[selectedCharIdx];
+        
+        // Calculate player mallet velocity
+        let oldPlayerX = playerMallet.x;
+        let oldPlayerY = playerMallet.y;
+        updateMalletPosition(mouseX, mouseY);
+        playerMallet.vx = (playerMallet.x - oldPlayerX) / dt;
+        playerMallet.vy = (playerMallet.y - oldPlayerY) / dt;
+        
+        // Run AI behavior
+        runOpponentAI(char);
+        
+        // Move pack
+        puck.x += puck.vx;
+        puck.y += puck.vy;
+        
+        // Apply tiny friction/air resistance
+        puck.vx *= 0.992;
+        puck.vy *= 0.992;
+        
+        // Check mallet collisions
+        checkMalletCollision(playerMallet);
+        checkMalletCollision(aiMallet);
+        
+        // Boundary wall collisions
+        // Side wall bounce
+        if (puck.x - puck.radius < 0) {
+          puck.x = puck.radius;
+          puck.vx = -puck.vx * 0.85;
+          addParticles(0, puck.y, '#fff', 3);
+        } else if (puck.x + puck.radius > tableWidth) {
+          puck.x = tableWidth - puck.radius;
+          puck.vx = -puck.vx * 0.85;
+          addParticles(tableWidth, puck.y, '#fff', 3);
+        }
+        
+        // Top and Bottom wall (ignoring Goal mouth)
+        const isWithinGoalX = (puck.x > goalStart && puck.x < goalEnd);
+        
+        if (puck.y - puck.radius < 0) {
+          if (isWithinGoalX) {
+            // GOAL FOR PLAYER!
+            triggerGoal(true);
+          } else {
+            puck.y = puck.radius;
+            puck.vy = -puck.vy * 0.85;
+            addParticles(puck.x, 0, '#fff', 3);
+          }
+        } else if (puck.y + puck.radius > tableHeight) {
+          if (isWithinGoalX) {
+            // GOAL FOR AI!
+            triggerGoal(false);
+          } else {
+            puck.y = tableHeight - puck.radius;
+            puck.vy = -puck.vy * 0.85;
+            addParticles(puck.x, tableHeight, '#fff', 3);
+          }
+        }
+        
+        // Update particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.alpha -= p.decay;
+          if (p.alpha <= 0) {
+            particles.splice(i, 1);
+          }
+        }
+      }
+
+      // Goal triggers
+      function triggerGoal(playerScored) {
+        isPlaying = false;
+        
+        if (playerScored) {
+          playerScore++;
+          document.getElementById('goal-scorer').textContent = "あなたの得点！";
+          document.getElementById('goal-text').textContent = "GOAL!!";
+          document.getElementById('goal-text').style.color = '#25f4ee';
+          addParticles(tableWidth / 2, 20, '#25f4ee', 40);
+        } else {
+          aiScore++;
+          const char = characters[selectedCharIdx];
+          document.getElementById('goal-scorer').textContent = `${char.name} の得点！`;
+          document.getElementById('goal-text').textContent = "CONCEDED";
+          document.getElementById('goal-text').style.color = '#ec4899';
+          addParticles(tableWidth / 2, tableHeight - 20, '#ec4899', 40);
+        }
+        
+        // Update score in UI
+        const opponentName = characters[selectedCharIdx].name;
+        document.getElementById('page-subtitle').textContent = `SCORE: YOU ( ${playerScore} )  VS  ${opponentName.toUpperCase()} ( ${aiScore} )`;
+        
+        // Show Goal overlay
+        const goalOverlay = document.getElementById('goal-overlay');
+        goalOverlay.classList.add('show');
+        
+        setTimeout(() => {
+          goalOverlay.classList.remove('show');
+          
+          if (playerScore >= 7 || aiScore >= 7) {
+            endMatch(playerScore >= 7);
+          } else {
+            resetPuck(!playerScored);
+            startMatch();
+          }
+        }, 1800);
+      }
+
+      // Finish match
+      function endMatch(playerWon) {
+        isPlaying = false;
+        const resultOverlay = document.getElementById('result-overlay');
+        const resultTitle = document.getElementById('result-title');
+        const resultScore = document.getElementById('result-score');
+        
+        const opponentName = characters[selectedCharIdx].name;
+        resultScore.textContent = `最終スコア:  YOU ${playerScore}  -  ${aiScore} ${opponentName}`;
+        
+        if (playerWon) {
+          resultTitle.textContent = "YOU WIN!";
+          resultTitle.style.background = "linear-gradient(135deg, #25f4ee 0%, var(--color-accent) 100%)";
+          resultTitle.style.webkitBackgroundClip = "text";
+          addParticles(tableWidth / 2, tableHeight / 2, '#25f4ee', 60);
+        } else {
+          resultTitle.textContent = "DEFEATED";
+          resultTitle.style.background = "linear-gradient(135deg, #ef4444 0%, var(--color-primary) 100%)";
+          resultTitle.style.webkitBackgroundClip = "text";
+          addParticles(tableWidth / 2, tableHeight / 2, '#ef4444', 60);
+        }
+        
+        resultOverlay.classList.add('show');
+      }
+
+      // Drawing methods
+      function drawTable() {
+        ctx.clearRect(0, 0, tableWidth, tableHeight);
+        
+        // Neon grid lines for background
+        ctx.strokeStyle = 'rgba(255,255,255,0.015)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < tableWidth; x += 30) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, tableHeight);
+          ctx.stroke();
+        }
+        for (let y = 0; y < tableHeight; y += 30) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(tableWidth, y);
+          ctx.stroke();
+        }
+        
+        // Table Outer border neon
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(0, 0, tableWidth, tableHeight);
+        
+        // Goal Mouth Gates (neon indicators)
+        // Top Goal Gate
+        ctx.strokeStyle = aiScore >= 6 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(236, 72, 153, 0.3)';
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(goalStart, 2);
+        ctx.lineTo(goalEnd, 2);
+        ctx.stroke();
+        
+        // Bottom Goal Gate
+        ctx.strokeStyle = playerScore >= 6 ? 'rgba(37, 244, 238, 0.3)' : 'rgba(168, 85, 247, 0.3)';
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(goalStart, tableHeight - 2);
+        ctx.lineTo(goalEnd, tableHeight - 2);
+        ctx.stroke();
+        
+        // Center Line (Neon divider)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, tableHeight / 2);
+        ctx.lineTo(tableWidth, tableHeight / 2);
+        ctx.stroke();
+        
+        // Center Circle
+        ctx.beginPath();
+        ctx.arc(tableWidth / 2, tableHeight / 2, 60, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Draw Particles
+        particles.forEach(p => {
+          ctx.save();
+          ctx.globalAlpha = p.alpha;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = p.color;
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // Draw Puck
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(puck.x, puck.y, puck.radius, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#fff';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+        
+        // Draw Player Mallet (Red Neon Theme)
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(playerMallet.x, playerMallet.y, playerMallet.radius, 0, Math.PI * 2);
+        ctx.fillStyle = '#25f4ee';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#25f4ee';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Draw inner handle
+        ctx.beginPath();
+        ctx.arc(playerMallet.x, playerMallet.y, 8, 0, Math.PI * 2);
+        ctx.fillStyle = '#08080f';
+        ctx.fill();
+        ctx.restore();
+        
+        // Draw AI Mallet (Opponent Face/Image)
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(aiMallet.x, aiMallet.y, aiMallet.radius, 0, Math.PI * 2);
+        ctx.fillStyle = '#ec4899';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#ec4899';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Draw Opponent Avatar inside mallet
+        ctx.beginPath();
+        ctx.arc(aiMallet.x, aiMallet.y, aiMallet.radius - 2, 0, Math.PI * 2);
+        ctx.clip(); // Clip image inside circle mallet
+        if (opponentImg.complete && opponentImg.naturalWidth !== 0) {
+          ctx.drawImage(
+            opponentImg,
+            aiMallet.x - aiMallet.radius,
+            aiMallet.y - aiMallet.radius,
+            aiMallet.radius * 2,
+            aiMallet.radius * 2
+          );
+        } else {
+          // Draw fallback inner circle
+          ctx.beginPath();
+          ctx.arc(aiMallet.x, aiMallet.y, 8, 0, Math.PI * 2);
+          ctx.fillStyle = '#08080f';
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // Main RAF loop
+      function gameLoop(timestamp) {
+        if (!isPlaying) return;
+        
+        let dt = (timestamp - lastTime) / 16.666; // Normalize to approx 60fps scale
+        if (dt > 3) dt = 3; // Prevent extreme skips on tab lag
+        
+        lastTime = timestamp;
+        
+        updatePhysics(dt);
+        drawTable();
+        
+        requestAnimationFrame(gameLoop);
+      }
+
+      // Control Action Bindings
+      document.getElementById('restart-btn').addEventListener('click', () => {
+        document.getElementById('result-overlay').classList.remove('show');
+        playerScore = 0;
+        aiScore = 0;
+        const charName = characters[selectedCharIdx].name;
+        document.getElementById('page-subtitle').textContent = `SCORE: YOU ( 0 )  VS  ${charName.toUpperCase()} ( 0 )`;
+        
+        document.getElementById('ready-overlay').classList.add('show');
+        resetPuck(true);
+        drawTable();
+      });
+
+      function returnToLobby() {
+        isPlaying = false;
+        playBGM(''); // Stop BGM
+        document.getElementById('game-play-panel').style.display = 'none';
+        document.getElementById('lobby-panel').style.display = 'block';
+        document.getElementById('page-subtitle').textContent = "対戦相手を選択し、サイバーエアホッケーバトルをスタートしましょう！";
+      }
+
+      document.getElementById('exit-btn').addEventListener('click', returnToLobby);
+      document.getElementById('abort-btn').addEventListener('click', () => {
+        if (confirm("試合を中断してロビーに戻りますか？")) {
+          returnToLobby();
+        }
+      });
+
+      // Page Visibility
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          if (bgmAudio && !bgmAudio.paused) {
+            bgmAudio.pause();
+            if (loopTimeout) clearTimeout(loopTimeout);
+          }
+        } else {
+          if (isPlaying && bgmAudio && currentMusicData) {
+            bgmAudio.volume = 0;
+            bgmAudio.play().then(() => {
+              fadeIn(bgmAudio);
+              setup60SecLoop();
+            }).catch(e => console.log(e));
+          }
+        }
+      });
+
+    });
+  </script>
+
+</body>
+</html>

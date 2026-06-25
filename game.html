@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A.M.F ARCADE - スライドパズル</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  
+  <!-- Main site CSS for matching token designs -->
+  <link rel="stylesheet" href="style.css">
+  
+  <style>
+    .game-body {
+      background-color: #030305;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    
+    .game-container {
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+      margin: 0 auto;
+    }
+    
+    .game-header {
+      margin-bottom: 30px;
+    }
+    
+    .game-title {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: 0.2rem;
+      background: linear-gradient(135deg, #fff 30%, var(--color-primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+      text-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+    }
+    
+    .game-instructions {
+      color: var(--color-text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 25px;
+    }
+    
+    /* Puzzle Area */
+    .puzzle-wrap {
+      position: relative;
+      margin: 0 auto 30px auto;
+      max-width: fit-content;
+    }
+    
+    .puzzle-board {
+      --board-size: 420px;
+      width: var(--board-size);
+      height: var(--board-size);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 3px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 5px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(168, 85, 247, 0.1);
+      position: relative;
+    }
+    
+    @media (max-width: 480px) {
+      .puzzle-board {
+        --board-size: 85vw;
+        border-radius: 12px;
+      }
+    }
+    
+    .puzzle-piece {
+      width: 100%;
+      height: 100%;
+      background-image: var(--bg-image);
+      background-size: var(--board-size) var(--board-size);
+      background-position: calc(-1 * var(--orig-col) * (var(--board-size) - 10px) / 3) calc(-1 * var(--orig-row) * (var(--board-size) - 10px) / 3);
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 2px 5px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    
+    .puzzle-piece:active {
+      transform: scale(0.95);
+    }
+    
+    .puzzle-piece.empty {
+      background-image: none !important;
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      cursor: default;
+    }
+    
+    /* Control Panel */
+    .game-controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .game-btn {
+      padding: 12px 28px;
+      border-radius: 30px;
+      border: 1px solid var(--color-border);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition-bounce);
+      color: #fff;
+      background: rgba(255, 255, 255, 0.03);
+    }
+    
+    .game-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: #fff;
+      transform: translateY(-2px);
+    }
+    
+    .game-btn-primary {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      border: none;
+      box-shadow: 0 5px 15px rgba(168, 85, 247, 0.3);
+    }
+    
+    .game-btn-primary:hover {
+      box-shadow: 0 8px 25px rgba(168, 85, 247, 0.5);
+      transform: translateY(-2px);
+    }
+    
+    /* Success Screen */
+    .success-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(5, 5, 7, 0.85);
+      backdrop-filter: blur(10px);
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+      z-index: 20;
+    }
+    
+    .success-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .success-title {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, #25f4ee 0%, var(--color-accent) 50%, var(--color-primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+      animation: pulseText 2s infinite ease-in-out;
+    }
+    
+    .success-desc {
+      color: var(--color-text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: 25px;
+      padding: 0 20px;
+    }
+    
+    @keyframes pulseText {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+    
+    .preview-box {
+      width: 120px;
+      height: 120px;
+      border-radius: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    
+    .preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    @keyframes rotateDisc {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="game-body">
+
+  <!-- Glowing Background Orbs -->
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <div class="game-container">
+    
+    <header class="game-header">
+      <h1 class="game-title">A.M.F ARCADE</h1>
+      <p class="game-instructions">
+        ピースをスライドさせて、元の画像を完成させましょう！<br>
+        クリアすると、このスライドパズルのオリジナル壁紙画像をダウンロードできます。
+      </p>
+    </header>
+
+    <!-- Now Playing BGM Credit Container -->
+    <div id="now-playing-container" style="display: none; justify-content: center; align-items: center; gap: 8px; margin: -10px auto 25px auto; padding: 8px 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 30px; backdrop-filter: blur(10px); max-width: fit-content; box-shadow: 0 5px 15px rgba(0,0,0,0.2), inset 0 0 10px rgba(255,255,255,0.02); opacity: 0; transition: opacity 0.5s ease; z-index: 5; flex-wrap: wrap;">
+      <span style="display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; color: var(--color-accent); animation: rotateDisc 3s linear infinite; flex-shrink: 0;">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      </span>
+      <span style="font-size: 0.7rem; letter-spacing: 0.12rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; flex-shrink: 0;">BGM:</span>
+      <span style="font-size: 0.82rem; color: #fff; font-weight: 500; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+        <a id="music-title-link" href="" target="_blank" style="color: #fff; text-decoration: none; border-bottom: 1.5px dashed rgba(255,255,255,0.3); transition: border-color 0.2s, color 0.2s; white-space: nowrap;">楽曲名</a>
+        <span style="color: var(--color-text-secondary); font-size: 0.75rem; font-weight: normal; margin: 0 1px;">by</span>
+        <a id="music-artist-link" href="" target="_blank" style="color: var(--color-secondary); text-decoration: none; border-bottom: 1.5px dashed rgba(168,85,247,0.3); transition: border-color 0.2s, color 0.2s; white-space: nowrap;">アーティスト名</a>
+      </span>
+    </div>
+
+    <!-- Timer Display -->
+    <div id="timer-container" style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: #25f4ee; margin-bottom: 20px; text-shadow: 0 0 15px rgba(37,244,238,0.4); letter-spacing: 0.1rem;">
+      TIME: <span id="timer-val">00:00.0</span>
+    </div>
+
+    <!-- Puzzle Game Box -->
+    <div class="puzzle-wrap">
+      <div class="puzzle-board" id="puzzle-board">
+        <!-- Dynamically populated pieces -->
+      </div>
+      
+      <!-- Congratulations Modal Overlay inside Board -->
+      <div class="success-overlay" id="success-overlay">
+        <div class="preview-box">
+          <img id="download-preview-img" src="" alt="Special Wallpaper Preview">
+        </div>
+        <h2 class="success-title">CLEAR!!</h2>
+        <p id="clear-time-display" class="success-desc" style="font-size: 1.15rem; color: #25f4ee; font-weight: 700; margin-bottom: 5px; text-shadow: 0 0 10px rgba(37,244,238,0.3);"></p>
+        <p class="success-desc" style="margin-bottom: 15px;">パズル完成おめでとうございます！</p>
+        
+        <!-- Score Submission -->
+        <div id="score-submit-container" style="margin-bottom: 12px; display: flex; gap: 8px; width: 80%; max-width: 280px; justify-content: center; align-items: center;">
+          <input type="text" id="player-name-input" placeholder="名前を入力 (英数字のみ)" style="flex: 1; padding: 8px 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--color-border); border-radius: 20px; color: #fff; font-size: 0.82rem; outline: none; text-align: center; height: 35px;" maxlength="10">
+          <button id="submit-score-btn" class="game-btn game-btn-primary" style="padding: 8px 18px; font-size: 0.82rem; margin: 0; height: 35px; border-radius: 20px;">登録</button>
+        </div>
+        <p id="submit-status-msg" style="font-size: 0.75rem; color: var(--color-accent); margin: -5px 0 15px 0; display: none; font-weight: 600;"></p>
+        
+        <!-- Leaderboard (Top 5) -->
+        <div id="leaderboard-box" style="margin-bottom: 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 12px 25px; border-radius: 12px; width: 80%; max-width: 280px; text-align: left; box-shadow: inset 0 0 10px rgba(255,255,255,0.02);">
+          <h4 style="font-family: var(--font-display); font-size: 0.85rem; font-weight: 700; color: var(--color-accent); margin-top: 0; margin-bottom: 8px; letter-spacing: 0.05rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px; text-transform: uppercase;">GLOBAL LEADERBOARD (BEST 5)</h4>
+          <ol id="leaderboard-list" style="font-size: 0.82rem; color: var(--color-text-secondary); padding-left: 15px; margin: 0; line-height: 1.6; list-style-type: decimal;">
+            <!-- Loaded dynamically -->
+          </ol>
+        </div>
+
+        <a id="download-link" class="game-btn game-btn-primary" href="" download="amf_special_wallpaper.jpg">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" style="margin-right: 5px;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          画像をダウンロード
+        </a>
+      </div>
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="game-controls" style="flex-wrap: wrap;">
+      <button id="shuffle-btn" class="game-btn">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        シャッフルして再挑戦
+      </button>
+      <button id="change-image-btn" class="game-btn game-btn-primary">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+        </svg>
+        他の画像に変更
+      </button>
+      <button id="view-leaderboard-btn" class="game-btn">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;">
+          <circle cx="12" cy="8" r="7"></circle>
+          <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+        </svg>
+        ランキングを見る
+      </button>
+      <a href="index.html" class="game-btn">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        サイトに戻る
+      </a>
+    </div>
+
+    <!-- Leaderboard Modal (View at any time) -->
+    <div id="leaderboard-modal" class="success-overlay" style="z-index: 30; position: fixed; width: 100vw; height: 100vh; left: 0; top: 0; background: rgba(5, 5, 7, 0.95);">
+      <div style="background: rgba(15, 15, 25, 0.95); border: 2px solid rgba(255, 255, 255, 0.08); padding: 30px 25px; border-radius: 20px; width: 90%; max-width: 320px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(37,244,238,0.15); backdrop-filter: blur(20px); position: relative;">
+        <h3 style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; color: #25f4ee; margin-top: 0; margin-bottom: 20px; letter-spacing: 0.1rem; text-shadow: 0 0 15px rgba(37,244,238,0.3); text-transform: uppercase;">GLOBAL LEADERBOARD</h3>
+        
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); padding: 15px 20px; border-radius: 12px; text-align: left; margin-bottom: 25px; min-height: 120px; box-shadow: inset 0 0 10px rgba(255,255,255,0.01);">
+          <ol id="modal-leaderboard-list" style="font-size: 0.88rem; color: var(--color-text-secondary); padding-left: 20px; margin: 0; line-height: 1.8; list-style-type: decimal;">
+            <!-- Loaded dynamically -->
+          </ol>
+        </div>
+
+        <button id="close-leaderboard-btn" class="game-btn game-btn-primary" style="padding: 10px 30px; border-radius: 20px; font-size: 0.85rem; width: 100%; justify-content: center; margin: 0;">閉じる</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Load Configurations -->
+  <script src="config.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Get configuration
+      let config = null;
+      const localData = localStorage.getItem('band_config_data');
+      const fileConfig = window.BAND_CONFIG;
+      
+      if (localData) {
+        try {
+          const parsedLocal = JSON.parse(localData);
+          // If config.js is newer than localStorage, clear localStorage and use config.js
+          if (fileConfig && fileConfig.lastUpdated && parsedLocal.lastUpdated && fileConfig.lastUpdated > parsedLocal.lastUpdated) {
+            localStorage.removeItem('band_config_data');
+            config = fileConfig;
+            console.log('Detected newer config.js. Cleared local cache.');
+          } else if (fileConfig && fileConfig.lastUpdated && !parsedLocal.lastUpdated) {
+            localStorage.removeItem('band_config_data');
+            config = fileConfig;
+          } else {
+            config = parsedLocal;
+          }
+        } catch(e) {
+          config = fileConfig;
+        }
+      } else {
+        config = fileConfig;
+      }
+      
+      // Filter out non-empty registered images
+      let validImages = [];
+      if (config) {
+        if (config.gameImages && Array.isArray(config.gameImages)) {
+          validImages = config.gameImages.filter(img => img && img.trim() !== '');
+        }
+        // Fallback for transition compatibility
+        if (validImages.length === 0 && config.gameImage) {
+          validImages.push(config.gameImage);
+        }
+      }
+      // Ultimate fallback
+      if (validImages.length === 0) {
+        validImages.push('assets/space.png');
+      }
+
+      // Timer & Leaderboard states
+      let timerInterval = null;
+      let startTime = 0;
+      let timerStarted = false;
+      
+      function updateTimer() {
+        const diff = Date.now() - startTime;
+        const minutes = Math.floor(diff / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        const milliseconds = Math.floor((diff % 1000) / 100);
+        
+        const minStr = String(minutes).padStart(2, '0');
+        const secStr = String(seconds).padStart(2, '0');
+        
+        document.getElementById('timer-val').textContent = `${minStr}:${secStr}.${milliseconds}`;
+      }
+      
+      function startTimer() {
+        startTime = Date.now();
+        timerInterval = setInterval(updateTimer, 100);
+        timerStarted = true;
+      }
+      
+      function stopTimer() {
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+      }
+
+      const kvdbUrl = 'https://kvdb.io/amf_slide_puzzle_leaderboard_v2/scores';
+
+      // ランキングの取得 (共通関数)
+      const fetchLeaderboard = () => {
+        return fetch(kvdbUrl)
+          .then(res => {
+            if (res.status === 404) {
+              return []; // データがまだ存在しない場合は空配列
+            }
+            return res.json();
+          })
+          .catch(err => {
+            console.error('Failed to fetch leaderboard:', err);
+            throw err;
+          });
+      };
+
+      function updateLeaderboard(rawTime, playerName = '') {
+        const listEl = document.getElementById('leaderboard-list');
+        
+        // ヘルパー: ランキングの描画
+        const renderEntries = (entries) => {
+          listEl.innerHTML = '';
+          if (!entries || entries.length === 0) {
+            listEl.innerHTML = '<li style="list-style-type: none; margin-left: -15px; color: var(--color-text-secondary);">記録がありません</li>';
+            return;
+          }
+          
+          entries.forEach((entry, idx) => {
+            const score = parseInt(entry.score);
+            const min = Math.floor(score / 60000);
+            const sec = Math.floor((score % 60000) / 1000);
+            const ms = Math.floor((score % 1000) / 10);
+            const formatted = `${min > 0 ? min + 'm ' : ''}${sec}.${String(ms).padStart(2, '0')}s`;
+            
+            const li = document.createElement('li');
+            li.style.color = idx === 0 ? 'var(--color-accent)' : (idx < 3 ? '#fff' : 'var(--color-text-secondary)');
+            li.style.marginBottom = '4px';
+            li.innerHTML = `<strong>${idx + 1}位 (${entry.name}):</strong> ${formatted}`;
+            listEl.appendChild(li);
+          });
+        };
+
+        // スコア登録処理
+        if (rawTime > 0 && playerName.trim() !== '') {
+          const sanitizedName = playerName.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10); // 半角英数字のみ、最大10文字
+          if (sanitizedName) {
+            const statusMsg = document.getElementById('submit-status-msg');
+            statusMsg.style.display = 'block';
+            statusMsg.style.color = '#fff';
+            statusMsg.textContent = 'スコア登録中...';
+
+            fetchLeaderboard()
+              .then(entries => {
+                // 新しいスコアを追加
+                entries.push({ name: sanitizedName, score: rawTime });
+                // タイム順（昇順）にソート
+                entries.sort((a, b) => a.score - b.score);
+                // 上位5件に絞り込み
+                const top5 = entries.slice(0, 5);
+
+                // KVdbに保存
+                return fetch(kvdbUrl, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(top5)
+                }).then(() => top5);
+              })
+              .then((updatedEntries) => {
+                statusMsg.textContent = '登録が完了しました！';
+                statusMsg.style.color = 'var(--color-accent)';
+                document.getElementById('score-submit-container').style.display = 'none';
+                renderEntries(updatedEntries);
+              })
+              .catch(err => {
+                console.error('Failed to submit score:', err);
+                statusMsg.textContent = '登録に失敗しました。';
+                statusMsg.style.color = '#ef4444';
+              });
+          }
+          return;
+        }
+
+        // 初期ロード時のランキング取得
+        fetchLeaderboard()
+          .then(entries => {
+            renderEntries(entries);
+          })
+          .catch(() => {
+            listEl.innerHTML = '<li style="list-style-type: none; margin-left: -15px; color: #ef4444;">データの取得に失敗しました</li>';
+          });
+      }
+
+      // BGM audio states
+      let bgmAudio = null;
+      let fadeInterval = null;
+      let loopTimeout = null;
+      const targetVolume = 0.3; // 30% volume
+      let currentMusicData = '';
+      let audioStartedByUser = false;
+
+      // playBGM handles fade-out and fade-in logic
+      function playBGM(musicData) {
+        currentMusicData = musicData;
+        
+        if (loopTimeout) {
+          clearTimeout(loopTimeout);
+          loopTimeout = null;
+        }
+
+        if (!musicData) {
+          if (bgmAudio) {
+            fadeOutAndStop(bgmAudio);
+          }
+          return;
+        }
+
+        if (bgmAudio) {
+          fadeOutAndSwitch(musicData);
+        } else {
+          startNewBGM(musicData);
+        }
+      }
+
+      function startNewBGM(musicData) {
+        bgmAudio = new Audio(musicData);
+        bgmAudio.loop = true; // Native loop so short tracks loop seamlessly
+        bgmAudio.volume = 0;
+        
+        // Loop restart timer (every 60s)
+        setup60SecLoop();
+
+        const playPromise = bgmAudio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            audioStartedByUser = true;
+            fadeIn(bgmAudio);
+          }).catch(error => {
+            console.log("Audio autoplay prevented. Will play on interaction.", error);
+            audioStartedByUser = false;
+          });
+        }
+      }
+
+      function fadeIn(audio) {
+        if (fadeInterval) clearInterval(fadeInterval);
+        let vol = audio.volume;
+        fadeInterval = setInterval(() => {
+          if (!audio || audio.paused) {
+            clearInterval(fadeInterval);
+            return;
+          }
+          vol += 0.02;
+          if (vol >= targetVolume) {
+            vol = targetVolume;
+            clearInterval(fadeInterval);
+          }
+          audio.volume = vol;
+        }, 100);
+      }
+
+      function fadeOutAndStop(audio) {
+        if (fadeInterval) clearInterval(fadeInterval);
+        let vol = audio.volume;
+        fadeInterval = setInterval(() => {
+          vol -= 0.03;
+          if (vol <= 0) {
+            vol = 0;
+            audio.pause();
+            clearInterval(fadeInterval);
+          }
+          audio.volume = vol;
+        }, 50);
+      }
+
+      function fadeOutAndSwitch(newMusicData) {
+        if (fadeInterval) clearInterval(fadeInterval);
+        let vol = bgmAudio.volume;
+        fadeInterval = setInterval(() => {
+          vol -= 0.03;
+          if (vol <= 0) {
+            vol = 0;
+            bgmAudio.pause();
+            clearInterval(fadeInterval);
+            bgmAudio = null;
+            startNewBGM(newMusicData);
+          }
+          if (bgmAudio) bgmAudio.volume = vol;
+        }, 50);
+      }
+
+      function setup60SecLoop() {
+        if (loopTimeout) clearTimeout(loopTimeout);
+        loopTimeout = setTimeout(() => {
+          if (bgmAudio && !bgmAudio.paused) {
+            fadeOutAndRestart();
+          }
+        }, 60000); // 60 seconds loop
+      }
+
+      function fadeOutAndRestart() {
+        if (fadeInterval) clearInterval(fadeInterval);
+        let vol = bgmAudio.volume;
+        fadeInterval = setInterval(() => {
+          vol -= 0.03;
+          if (vol <= 0) {
+            vol = 0;
+            clearInterval(fadeInterval);
+            if (bgmAudio) {
+              bgmAudio.currentTime = 0;
+              fadeIn(bgmAudio);
+              setup60SecLoop();
+            }
+          }
+          if (bgmAudio) bgmAudio.volume = vol;
+        }, 50);
+      }
+
+      // Try playing BGM if browser blocked initial autoplay
+      function tryTriggerBGM() {
+        if (bgmAudio && !audioStartedByUser && currentMusicData) {
+          bgmAudio.play().then(() => {
+            audioStartedByUser = true;
+            fadeIn(bgmAudio);
+          }).catch(e => console.log("Blocked:", e));
+        }
+      }
+
+      let currentImageSrc = '';
+
+      // Randomly pick a new puzzle image (ensuring it changes if more than 1 image exists)
+      function selectRandomImage() {
+        if (validImages.length <= 1) {
+          currentImageSrc = validImages[0];
+          return;
+        }
+        const candidates = validImages.filter(img => img !== currentImageSrc);
+        currentImageSrc = candidates[Math.floor(Math.random() * candidates.length)];
+      }
+
+      const board = document.getElementById('puzzle-board');
+      const downloadLink = document.getElementById('download-link');
+      const downloadPreviewImg = document.getElementById('download-preview-img');
+
+      // Update UI components with selected image
+      function applyImage(imgSrc) {
+        downloadLink.href = imgSrc;
+        downloadPreviewImg.src = imgSrc;
+        board.style.setProperty('--bg-image', `url(${imgSrc})`);
+      }
+      
+      // 2. Puzzle States
+      const size = 3; // 3x3 Grid
+      let pieces = []; // 0 to 8 (8 is empty)
+      let winState = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+      
+      // 3. Initialize Board
+      function initGame(changeImage = false) {
+        // Reset overlay
+        document.getElementById('success-overlay').classList.remove('show');
+        
+        // Reset timer
+        stopTimer();
+        document.getElementById('timer-val').textContent = '00:00.0';
+        timerStarted = false;
+        
+        // Randomize image if requested or first load
+        if (changeImage || !currentImageSrc) {
+          selectRandomImage();
+        }
+        applyImage(currentImageSrc);
+
+        // Play BGM mapped to current image & update credits
+        const origIdx = config ? config.gameImages.indexOf(currentImageSrc) : -1;
+        const currentMusicSrc = (origIdx !== -1 && config && config.gameMusics) ? config.gameMusics[origIdx] : '';
+        playBGM(currentMusicSrc);
+
+        // Update BGM Credit Display
+        const nowPlaying = document.getElementById('now-playing-container');
+        if (config && nowPlaying) {
+          const detail = (origIdx !== -1 && config.gameMusicDetails) ? config.gameMusicDetails[origIdx] : null;
+          const hasTitle = detail && detail.title && detail.title.trim() !== '';
+          const hasArtist = detail && detail.artist && detail.artist.trim() !== '';
+          
+          if ((hasTitle || hasArtist) && currentMusicSrc) {
+            const titleLink = document.getElementById('music-title-link');
+            const artistLink = document.getElementById('music-artist-link');
+            
+            // Set credits text
+            titleLink.textContent = hasTitle ? detail.title : 'Unknown Track';
+            artistLink.textContent = hasArtist ? detail.artist : 'Unknown Artist';
+            
+            // Configure title link
+            if (detail.titleLink && detail.titleLink.trim() !== '') {
+              titleLink.href = detail.titleLink;
+              titleLink.style.pointerEvents = 'auto';
+              titleLink.style.borderBottom = '1.5px dashed rgba(255,255,255,0.4)';
+              titleLink.style.cursor = 'pointer';
+            } else {
+              titleLink.removeAttribute('href');
+              titleLink.style.pointerEvents = 'none';
+              titleLink.style.borderBottom = 'none';
+              titleLink.style.cursor = 'default';
+            }
+            
+            // Configure artist link
+            if (detail.artistLink && detail.artistLink.trim() !== '') {
+              artistLink.href = detail.artistLink;
+              artistLink.style.pointerEvents = 'auto';
+              artistLink.style.borderBottom = '1.5px dashed rgba(168,85,247,0.4)';
+              artistLink.style.cursor = 'pointer';
+            } else {
+              artistLink.removeAttribute('href');
+              artistLink.style.pointerEvents = 'none';
+              artistLink.style.borderBottom = 'none';
+              artistLink.style.cursor = 'default';
+            }
+            
+            // Show credit container
+            nowPlaying.style.display = 'inline-flex';
+            void nowPlaying.offsetWidth; // Force reflow
+            nowPlaying.style.opacity = '1';
+          } else {
+            // Hide container
+            nowPlaying.style.opacity = '0';
+            setTimeout(() => {
+              if (nowPlaying.style.opacity === '0') {
+                nowPlaying.style.display = 'none';
+              }
+            }, 500);
+          }
+        } else if (nowPlaying) {
+          nowPlaying.style.display = 'none';
+        }
+        
+        // Reset puzzle order
+        pieces = [...winState];
+        shuffleBoard();
+        renderBoard();
+      }
+      
+      // Shuffle logic by performing random valid moves (ensures solvability)
+      function shuffleBoard() {
+        let emptyIdx = pieces.indexOf(size * size - 1);
+        
+        // Make 150 random moves to shuffle
+        for (let k = 0; k < 150; k++) {
+          const validMoves = [];
+          const row = Math.floor(emptyIdx / size);
+          const col = emptyIdx % size;
+          
+          if (row > 0) validMoves.push(emptyIdx - size); // Up
+          if (row < size - 1) validMoves.push(emptyIdx + size); // Down
+          if (col > 0) validMoves.push(emptyIdx - 1); // Left
+          if (col < size - 1) validMoves.push(emptyIdx + 1); // Right
+          
+          // Randomly select one adjacent piece and swap
+          const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+          pieces[emptyIdx] = pieces[randomMove];
+          pieces[randomMove] = size * size - 1; // move empty to new pos
+          emptyIdx = randomMove;
+        }
+      }
+      
+      // Render elements
+      function renderBoard() {
+        board.innerHTML = '';
+        
+        pieces.forEach((pieceVal, currentIdx) => {
+          const piece = document.createElement('div');
+          piece.className = 'puzzle-piece';
+          
+          // If this is the empty spot (value is 8)
+          if (pieceVal === size * size - 1) {
+            piece.classList.add('empty');
+          } else {
+            // Set background crop using CSS Variables
+            const origRow = Math.floor(pieceVal / size);
+            const origCol = pieceVal % size;
+            piece.style.setProperty('--orig-row', origRow);
+            piece.style.setProperty('--orig-col', origCol);
+            
+            // Swap Handler
+            piece.addEventListener('click', () => {
+              handlePieceClick(currentIdx);
+            });
+            
+            // Touch Support
+            piece.addEventListener('touchstart', (e) => {
+              e.preventDefault(); // Stop zoom
+              handlePieceClick(currentIdx);
+            });
+          }
+          
+          board.appendChild(piece);
+        });
+      }
+      
+      // Handle Click/Touch moves
+      function handlePieceClick(clickedIdx) {
+        // Try playing BGM if browser blocked initial autoplay
+        tryTriggerBGM();
+
+        // Start timer on first move
+        if (!timerStarted) {
+          startTimer();
+        }
+
+        const emptyIdx = pieces.indexOf(size * size - 1);
+        
+        const clickRow = Math.floor(clickedIdx / size);
+        const clickCol = clickedIdx % size;
+        const emptyRow = Math.floor(emptyIdx / size);
+        const emptyCol = emptyIdx % size;
+        
+        // Check adjacency
+        const isAdjacent = (Math.abs(clickRow - emptyRow) + Math.abs(clickCol - emptyCol)) === 1;
+        
+        if (isAdjacent) {
+          // Swap positions
+          pieces[emptyIdx] = pieces[clickedIdx];
+          pieces[clickedIdx] = size * size - 1;
+          
+          renderBoard();
+          checkWin();
+        }
+      }
+      
+      // Win Check
+      function checkWin() {
+        const isWin = pieces.every((val, idx) => val === idx);
+        if (isWin) {
+          // Stop timer
+          stopTimer();
+          const rawTime = Date.now() - startTime;
+          
+          // Calculate clear time string
+          const min = Math.floor(rawTime / 60000);
+          const sec = Math.floor((rawTime % 60000) / 1000);
+          const ms = Math.floor((rawTime % 1000) / 10);
+          const timeFormatted = `${min > 0 ? min + '分' : ''}${sec}.${String(ms).padStart(2, '0')}秒`;
+          
+          document.getElementById('clear-time-display').textContent = `クリアタイム: ${timeFormatted}`;
+          
+          // Show score submission container and clear status
+          document.getElementById('score-submit-container').style.display = 'flex';
+          const statusMsg = document.getElementById('submit-status-msg');
+          statusMsg.style.display = 'none';
+          statusMsg.textContent = '';
+          
+          // Configure submit button
+          const submitBtn = document.getElementById('submit-score-btn');
+          const nameInput = document.getElementById('player-name-input');
+          nameInput.value = ''; // Reset input
+          
+          // Remove old listeners to avoid multiple submissions
+          const newSubmitBtn = submitBtn.cloneNode(true);
+          submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
+          
+          newSubmitBtn.addEventListener('click', () => {
+            const nameVal = nameInput.value.trim();
+            if (nameVal === '') {
+              alert('名前を入力してください。');
+              return;
+            }
+            // Filter non-alphanumeric just in case
+            const sanitizedName = nameVal.replace(/[^a-zA-Z0-9]/g, '');
+            if (sanitizedName === '') {
+              alert('名前は半角英数字のみで入力してください。');
+              return;
+            }
+            updateLeaderboard(rawTime, sanitizedName);
+          });
+
+          // Update and show leaderboard
+          updateLeaderboard(0);
+
+          setTimeout(() => {
+            // Render full final image by removing empty styling class on final piece
+            const emptyPiece = board.querySelector('.empty');
+            if (emptyPiece) {
+              emptyPiece.classList.remove('empty');
+              emptyPiece.style.setProperty('--orig-row', size - 1);
+              emptyPiece.style.setProperty('--orig-col', size - 1);
+            }
+            
+            // Show Download Overlay
+            document.getElementById('success-overlay').classList.add('show');
+          }, 400);
+        }
+      }
+      
+      // Action binds - Shuffle keeps current image
+      document.getElementById('shuffle-btn').addEventListener('click', () => {
+        initGame(false);
+      });
+
+      // Action binds - Change selects another image and shuffles
+      const changeBtn = document.getElementById('change-image-btn');
+      if (changeBtn) {
+        if (validImages.length <= 1) {
+          // Hide button if there's only one image available
+          changeBtn.style.display = 'none';
+        } else {
+          changeBtn.addEventListener('click', () => {
+            initGame(true);
+          });
+        }
+      }
+
+      // ランキングを見るモーダルの制御
+      const leaderboardModal = document.getElementById('leaderboard-modal');
+      const viewLeaderboardBtn = document.getElementById('view-leaderboard-btn');
+      const closeLeaderboardBtn = document.getElementById('close-leaderboard-btn');
+      const modalListEl = document.getElementById('modal-leaderboard-list');
+
+      // ランキングボタンクリック
+      if (viewLeaderboardBtn) {
+        viewLeaderboardBtn.addEventListener('click', () => {
+          modalListEl.innerHTML = '<li style="list-style-type: none; margin-left: -20px; color: var(--color-text-secondary); text-align: center;">読み込み中...</li>';
+          leaderboardModal.classList.add('show');
+
+          fetchLeaderboard()
+            .then(entries => {
+              modalListEl.innerHTML = '';
+              if (!entries || entries.length === 0) {
+                modalListEl.innerHTML = '<li style="list-style-type: none; margin-left: -20px; color: var(--color-text-secondary); text-align: center;">記録がありません</li>';
+                return;
+              }
+              
+              entries.forEach((entry, idx) => {
+                const score = parseInt(entry.score);
+                const min = Math.floor(score / 60000);
+                const sec = Math.floor((score % 60000) / 1000);
+                const ms = Math.floor((score % 1000) / 10);
+                const formatted = `${min > 0 ? min + 'm ' : ''}${sec}.${String(ms).padStart(2, '0')}s`;
+                
+                const li = document.createElement('li');
+                li.style.color = idx === 0 ? 'var(--color-accent)' : (idx < 3 ? '#fff' : 'var(--color-text-secondary)');
+                li.style.marginBottom = '6px';
+                li.innerHTML = `<strong>${idx + 1}位 (${entry.name}):</strong> ${formatted}`;
+                modalListEl.appendChild(li);
+              });
+            })
+            .catch(err => {
+              console.error('Failed to load modal leaderboard:', err);
+              modalListEl.innerHTML = '<li style="list-style-type: none; margin-left: -20px; color: #ef4444; text-align: center;">取得に失敗しました</li>';
+            });
+        });
+      }
+
+      // 閉じるボタンクリック
+      if (closeLeaderboardBtn) {
+        closeLeaderboardBtn.addEventListener('click', () => {
+          leaderboardModal.classList.remove('show');
+        });
+      }
+
+      // 背景クリックで閉じる
+      if (leaderboardModal) {
+        leaderboardModal.addEventListener('click', (e) => {
+          if (e.target === leaderboardModal) {
+            leaderboardModal.classList.remove('show');
+          }
+        });
+      }
+
+      // Page Visibility API to pause when inactive and fade in when active again
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          if (bgmAudio && !bgmAudio.paused) {
+            bgmAudio.pause();
+            if (loopTimeout) clearTimeout(loopTimeout);
+          }
+        } else {
+          if (bgmAudio && currentMusicData) {
+            bgmAudio.volume = 0;
+            bgmAudio.play().then(() => {
+              fadeIn(bgmAudio);
+              setup60SecLoop();
+            }).catch(e => console.log(e));
+          }
+        }
+      });
+      
+      // Initialize leaderboard rendering
+      updateLeaderboard(0);
+      
+      // Start Game with random image selection
+      initGame(true);
+    });
+  </script>
+</body>
+</html>
