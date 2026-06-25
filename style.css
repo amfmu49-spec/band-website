@@ -1034,6 +1034,23 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
+  z-index: 2000; /* Above regular elements, below active modal but covers body */
+  display: flex;
+  justify-content: flex-end; /* Align overlay content to the right */
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0); /* Invisible background for full-screen click interception */
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobile-menu-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   /* Right side is dark, fades to fully transparent on the left */
   background: linear-gradient(to left, rgba(5, 5, 7, 0.98) 0%, rgba(5, 5, 7, 0.85) 45%, rgba(5, 5, 7, 0) 100%);
   /* Apply glassmorphism blur over the entire screen, but mask it so it fades on the left */
@@ -1041,13 +1058,8 @@ body {
   -webkit-backdrop-filter: blur(20px);
   -webkit-mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0) 100%);
   mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0) 100%);
-  z-index: 2000; /* Above regular elements, below active modal but covers body */
-  display: flex;
-  justify-content: flex-end; /* Align overlay content to the right */
-  align-items: center;
-  opacity: 0;
   pointer-events: none;
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
 }
 
 .mobile-menu-overlay.open {
