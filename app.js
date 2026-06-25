@@ -520,6 +520,13 @@ function initMobileMenu() {
     });
   });
 
+  // Close menu when clicking on empty space outside text
+  overlay.addEventListener('click', (e) => {
+    if (!e.target.closest('.mobile-nav-link')) {
+      closeMenu();
+    }
+  });
+
   // Close menu when pressing Escape key
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && overlay.classList.contains('open')) {
