@@ -1034,12 +1034,16 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(5, 5, 7, 0.88); /* Darkened semi-transparent overlay */
-  backdrop-filter: blur(20px); /* Glassmorphism aesthetic */
+  /* Right side is dark, fades to fully transparent on the left */
+  background: linear-gradient(to left, rgba(5, 5, 7, 0.98) 0%, rgba(5, 5, 7, 0.85) 45%, rgba(5, 5, 7, 0) 100%);
+  /* Apply glassmorphism blur over the entire screen, but mask it so it fades on the left */
+  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  -webkit-mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0) 100%);
+  mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0) 100%);
   z-index: 2000; /* Above regular elements, below active modal but covers body */
   display: flex;
-  justify-content: center;
+  justify-content: flex-end; /* Align overlay content to the right */
   align-items: center;
   opacity: 0;
   pointer-events: none;
@@ -1054,8 +1058,10 @@ body {
 .mobile-overlay-nav {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end; /* Align links to the right */
   gap: 35px;
+  width: 100%;
+  padding-right: 50px; /* Spacing from the right edge */
 }
 
 .mobile-nav-link {
@@ -1069,6 +1075,8 @@ body {
   transition: var(--transition-bounce);
   transform: translateY(30px);
   opacity: 0;
+  text-align: right;
+  transform-origin: right center; /* Pin scale animation origin to the right */
 }
 
 .mobile-menu-overlay.open .mobile-nav-link {
