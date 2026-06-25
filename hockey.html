@@ -21,7 +21,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 30px 20px;
+      padding: 30px 10px;
     }
     
     .game-container {
@@ -29,6 +29,7 @@
       width: 100%;
       text-align: center;
       margin: 0 auto;
+      overflow-x: hidden;
     }
     
     .game-header {
@@ -198,6 +199,8 @@
       overflow: hidden;
       box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(236, 72, 153, 0.1);
       line-height: 0;
+      /* Ensure canvas never overflows the game panel horizontally */
+      max-width: 100%;
     }
     
     #hockey-canvas {
@@ -205,6 +208,9 @@
       border: 3px solid rgba(255, 255, 255, 0.08);
       border-radius: 16px;
       cursor: none; /* Hide cursor on canvas for mallet control */
+      /* Responsive sizing: canvas renders at 400px but shrinks visually if needed */
+      max-width: 100%;
+      height: auto;
     }
     
     /* Side Stats Panel */
@@ -903,17 +909,37 @@
         let targetX = tableWidth / 2;
         let targetY = 100;
         
-        // If puck is on AI's half or AI decides to chase
+        // Wall-trap detection: check if puck is pinned against any wall
+        const wallBuffer = puck.radius + aiMallet.radius + 10;
+        const nearTopWall    = puck.y < wallBuffer;
+        const nearLeftWall   = puck.x < wallBuffer;
+        const nearRightWall  = puck.x > tableWidth - wallBuffer;
+        const isPinned = nearTopWall || nearLeftWall || nearRightWall;
+        
         if (puck.y < chaseRangeY) {
-          targetX = puck.x;
-          // Slowly push forward or retreat
-          if (puck.y < 65) {
-            // Prevent pushing the puck against the top wall
-            targetY = puck.y + 45;
-          } else if (puck.y < aiMallet.y && Math.abs(puck.x - aiMallet.x) < 50) {
-            targetY = puck.y - 10; // try to hit puck forward
+          if (isPinned) {
+            // Anti-trap: steer to the side of the puck to push it off the wall
+            if (nearTopWall) {
+              // Approach from the side to push puck down, not from above
+              targetX = puck.x + (aiMallet.x < puck.x ? -1 : 1) * (aiMallet.radius + puck.radius + 5);
+              targetY = puck.y + aiMallet.radius + 5;
+            } else if (nearLeftWall) {
+              // Approach from above/below, push puck to the right
+              targetX = puck.x + aiMallet.radius + 5;
+              targetY = puck.y;
+            } else if (nearRightWall) {
+              // Approach from above/below, push puck to the left
+              targetX = puck.x - aiMallet.radius - 5;
+              targetY = puck.y;
+            }
           } else {
-            targetY = Math.min(tableHeight / 2 - aiMallet.radius, puck.y - 15);
+            targetX = puck.x;
+            // Normal chase behavior
+            if (puck.y < aiMallet.y && Math.abs(puck.x - aiMallet.x) < 50) {
+              targetY = puck.y - 10; // try to hit puck forward
+            } else {
+              targetY = Math.min(tableHeight / 2 - aiMallet.radius, puck.y - 15);
+            }
           }
         } else {
           // Retreat back to defense position
@@ -921,7 +947,7 @@
           targetY = 80;
         }
         
-        // Constrain target positions
+        // Constrain target positions to AI's half
         targetX = Math.max(aiMallet.radius, Math.min(tableWidth - aiMallet.radius, targetX));
         targetY = Math.max(aiMallet.radius, Math.min(tableHeight / 2 - aiMallet.radius, targetY));
         
