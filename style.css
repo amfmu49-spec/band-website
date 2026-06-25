@@ -209,7 +209,7 @@ body {
 
 /* Main Sections Layout */
 .content-wrapper {
-  padding-bottom: calc(var(--mobile-nav-height) + 20px);
+  padding-bottom: 0;
 }
 
 .section-container {
@@ -693,7 +693,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 2000;
+  z-index: 3000;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -969,99 +969,125 @@ body {
 }
 
 
-/* 5. Bottom Navigation Bar (Mobile Only) */
-.mobile-nav-bar {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 450px;
-  height: var(--mobile-nav-height);
-  background: rgba(10, 10, 15, 0.75);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--color-border);
-  border-radius: 50px;
+/* 5. Hamburger Menu Toggle Button */
+.menu-toggle-btn {
   display: flex;
-  justify-content: space-around;
-  align-items: center;
-  z-index: 1500;
-  padding: 0 10px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(168, 85, 247, 0.08);
+  flex-direction: column;
+  justify-content: space-between;
+  width: 26px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 2500; /* Must be above the mobile overlay menu */
+  position: relative;
+  transition: var(--transition-smooth);
 }
 
-.mobile-nav-item {
+.menu-toggle-btn span {
+  width: 100%;
+  height: 2px;
+  background-color: #fff;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 2px;
+  position: absolute;
+  left: 0;
+}
+
+.menu-toggle-btn span:nth-child(1) { top: 0px; }
+.menu-toggle-btn span:nth-child(2) { top: 8px; }
+.menu-toggle-btn span:nth-child(3) { top: 16px; }
+
+/* Hamburger Button Hover Effect */
+.menu-toggle-btn:hover span {
+  background-color: var(--color-primary);
+}
+
+/* Open/Close Animation State */
+.menu-toggle-btn.open span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+  background-color: var(--color-secondary);
+}
+
+.menu-toggle-btn.open span:nth-child(2) {
+  opacity: 0;
+  transform: scale(0);
+}
+
+.menu-toggle-btn.open span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+  background-color: var(--color-secondary);
+}
+
+/* Hide toggle button on desktop view */
+@media (min-width: 768px) {
+  .menu-toggle-btn {
+    display: none;
+  }
+}
+
+/* 5.5 Mobile Menu Overlay (Mobile Only) */
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(5, 5, 7, 0.88); /* Darkened semi-transparent overlay */
+  backdrop-filter: blur(20px); /* Glassmorphism aesthetic */
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 2000; /* Above regular elements, below active modal but covers body */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobile-menu-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-overlay-nav {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
+  gap: 35px;
+}
+
+.mobile-nav-link {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: 0.2rem;
   color: var(--color-text-secondary);
-  font-size: 0.65rem;
-  font-weight: 500;
-  letter-spacing: 0.05rem;
   text-decoration: none;
-  cursor: pointer;
-  transition: var(--transition-fast);
-  padding: 5px 10px;
-  border-radius: 20px;
-}
-
-.mobile-nav-item:hover,
-.mobile-nav-item.active {
-  color: #fff;
-}
-
-.nav-icon {
-  margin-bottom: 4px;
+  text-transform: uppercase;
   transition: var(--transition-bounce);
+  transform: translateY(30px);
+  opacity: 0;
 }
 
-.mobile-nav-item:hover .nav-icon,
-.mobile-nav-item.active .nav-icon {
-  transform: translateY(-2px);
-  stroke: var(--color-secondary);
+.mobile-menu-overlay.open .mobile-nav-link {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
 }
 
-/* Audio Wave Animation Icon in Navigation */
-.music-wave-icon {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-bottom: 4px;
-  padding: 2px 0;
-}
+/* Staggered Delay for Mobile Nav Links when Menu opens */
+.mobile-menu-overlay.open .mobile-nav-link:nth-child(1) { transition-delay: 0.1s; }
+.mobile-menu-overlay.open .mobile-nav-link:nth-child(2) { transition-delay: 0.2s; }
+.mobile-menu-overlay.open .mobile-nav-link:nth-child(3) { transition-delay: 0.3s; }
+.mobile-menu-overlay.open .mobile-nav-link:nth-child(4) { transition-delay: 0.4s; }
 
-.music-wave-icon span {
-  width: 3px;
-  height: 4px;
-  background-color: var(--color-text-secondary);
-  border-radius: 2px;
-  transition: var(--transition-fast);
-}
-
-.mobile-nav-item:hover .music-wave-icon span,
-.mobile-nav-item.active .music-wave-icon span {
-  background-color: var(--color-accent);
-}
-
-/* Wave Playing Animation */
-.sticky-player-sheet.open ~ .mobile-nav-bar #nav-item-spotify-toggle .music-wave-icon span {
-  background-color: var(--color-accent);
-  animation: bounceWave 0.8s ease infinite alternate;
-}
-
-.sticky-player-sheet.open ~ .mobile-nav-bar #nav-item-spotify-toggle .music-wave-icon span:nth-child(1) { animation-delay: 0.1s; }
-.sticky-player-sheet.open ~ .mobile-nav-bar #nav-item-spotify-toggle .music-wave-icon span:nth-child(2) { animation-delay: 0.3s; }
-.sticky-player-sheet.open ~ .mobile-nav-bar #nav-item-spotify-toggle .music-wave-icon span:nth-child(3) { animation-delay: 0.0s; }
-.sticky-player-sheet.open ~ .mobile-nav-bar #nav-item-spotify-toggle .music-wave-icon span:nth-child(4) { animation-delay: 0.2s; }
-
-@keyframes bounceWave {
-  0% { height: 4px; }
-  100% { height: 16px; }
+.mobile-nav-link:hover,
+.mobile-nav-link.active {
+  color: #fff;
+  transform: scale(1.1);
+  text-shadow: 0 0 25px var(--color-primary), 0 0 10px var(--color-secondary);
 }
 
 
@@ -1441,10 +1467,10 @@ body.modal-open .desktop-player-trigger {
   transform: scale(0.8) !important;
 }
 
-body.modal-open .mobile-nav-bar {
+body.modal-open .menu-toggle-btn {
   opacity: 0 !important;
   pointer-events: none !important;
-  transform: translate(-50%, 50px) !important;
+  transform: scale(0.8) !important;
 }
 
 /* ==========================================================================
