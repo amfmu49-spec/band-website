@@ -572,14 +572,19 @@
         }
       }
       
+<<<<<<< Updated upstream
       function playWallHitSound() {
         if (navigator.vibrate) {
           try { navigator.vibrate(10); } catch(e) {}
         }
+=======
+      function playHitSound() {
+>>>>>>> Stashed changes
         if (!audioCtx) return;
         try {
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
+<<<<<<< Updated upstream
           osc.type = 'triangle';
           osc.frequency.setValueAtTime(350, audioCtx.currentTime);
           osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.1);
@@ -731,6 +736,17 @@
             osc.start(now);
             osc.stop(now + 1.0);
           }
+=======
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.08);
+>>>>>>> Stashed changes
         } catch(e) {}
       }
 
@@ -1188,7 +1204,11 @@
             // Spark effect!
             const hitColor = mallet === playerMallet ? '#25f4ee' : '#ec4899';
             addParticles(puck.x - nx * puck.radius, puck.y - ny * puck.radius, hitColor, 8);
+<<<<<<< Updated upstream
             playMalletHitSound(mallet === playerMallet);
+=======
+            playHitSound();
+>>>>>>> Stashed changes
           }
         }
       }
@@ -1226,12 +1246,20 @@
           puck.x = puck.radius;
           puck.vx = -puck.vx * 0.85;
           addParticles(0, puck.y, '#fff', 3);
+<<<<<<< Updated upstream
           playWallHitSound();
+=======
+          playHitSound();
+>>>>>>> Stashed changes
         } else if (puck.x + puck.radius > tableWidth) {
           puck.x = tableWidth - puck.radius;
           puck.vx = -puck.vx * 0.85;
           addParticles(tableWidth, puck.y, '#fff', 3);
+<<<<<<< Updated upstream
           playWallHitSound();
+=======
+          playHitSound();
+>>>>>>> Stashed changes
         }
         
         // Top and Bottom wall (ignoring Goal mouth)
@@ -1245,7 +1273,11 @@
             puck.y = puck.radius;
             puck.vy = -puck.vy * 0.85;
             addParticles(puck.x, 0, '#fff', 3);
+<<<<<<< Updated upstream
             playWallHitSound();
+=======
+            playHitSound();
+>>>>>>> Stashed changes
           }
         } else if (puck.y + puck.radius > tableHeight) {
           if (isWithinGoalX) {
@@ -1255,7 +1287,11 @@
             puck.y = tableHeight - puck.radius;
             puck.vy = -puck.vy * 0.85;
             addParticles(puck.x, tableHeight, '#fff', 3);
+<<<<<<< Updated upstream
             playWallHitSound();
+=======
+            playHitSound();
+>>>>>>> Stashed changes
           }
         }
         
