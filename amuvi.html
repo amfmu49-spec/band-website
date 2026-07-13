@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A.M.F AMUVI - Lyric Video Generator</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Noto+Sans+JP:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+  
+  <style>
+    body {
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      font-family: 'Noto Sans JP', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .amf-header {
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(10, 10, 12, 0.8);
+      backdrop-filter: blur(10px);
+    }
+
+    .amf-logo-text {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: 0.1rem;
+    }
+
+    .amuvi-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .amuvi-title {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 10px;
+      text-align: center;
+      text-shadow: 0 0 20px rgba(255, 0, 85, 0.5);
+      background: linear-gradient(135deg, #ff0055, #00ffcc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .amuvi-subtitle {
+      font-size: 1.1rem;
+      color: var(--color-text-secondary);
+      text-align: center;
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+
+    .bookmarklet-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 30px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bookmarklet-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, #ff0055, #00ffcc);
+    }
+
+    .step-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .step-number {
+      background: linear-gradient(135deg, #ff0055, #00ffcc);
+      color: #fff;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      font-weight: 900;
+    }
+
+    .code-area-container {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .bookmarklet-textarea {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 15px;
+      color: #00ffcc;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9rem;
+      resize: none;
+      min-height: 80px;
+      word-break: break-all;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .bookmarklet-textarea:focus {
+      border-color: #00ffcc;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .copy-btn.copied {
+      background: #00ffcc;
+      color: #000;
+      font-weight: bold;
+    }
+
+    .instructions {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .instructions li {
+      position: relative;
+      padding-left: 25px;
+      margin-bottom: 12px;
+      color: var(--color-text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .instructions li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: #ff0055;
+      font-weight: bold;
+    }
+
+    /* Tabs CSS */
+    .tab-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+    }
+    .tab-button {
+      flex: 1;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: var(--color-text-secondary);
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .tab-button.active {
+      background: rgba(0, 255, 204, 0.1);
+      border-color: #00ffcc;
+      color: #fff;
+    }
+    .device-content {
+      display: none;
+    }
+    .device-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="amf-header">
+    <a href="index.html" class="amf-logo-text">A.M.F</a>
+    <a href="index.html#playground" style="color: var(--color-text-secondary); text-decoration: none; font-size: 0.9rem;">← Back to PLAY GROUND</a>
+  </header>
+
+  <main class="amuvi-container">
+    <img src="assets/amuvi_logo.png" alt="AMUVI" class="amuvi-logo-img" style="max-width: 300px; width: 100%; height: auto; margin-bottom: 20px;">
+    <p class="amuvi-subtitle">
+      簡単リリックビデオジェネレーター。<br>
+      Sunoの楽曲ページでブックマークレットを起動し、簡単に動画を作成しましょう。
+    </p>
+
+    <div class="bookmarklet-box">
+      <div class="tab-buttons">
+        <button class="tab-button active" onclick="switchDevice('iphone')">iPhone (Safari)</button>
+        <button class="tab-button" onclick="switchDevice('android')">Android (Chrome)</button>
+      </div>
+
+      <div class="step-title">
+        <span class="step-number">1</span> ブックマークレットの登録
+      </div>
+      
+      <div class="device-content iphone active">
+        <ul class="instructions" style="margin-bottom: 20px;">
+          <li>Safariを開き、任意のページをブックマークに登録します。<br><span style="font-size:0.85rem; color:#888;">※画面下の「共有アイコン（四角から上矢印）」から「ブックマークを追加」</span></li>
+          <li>ブックマーク一覧を開き、右下の「編集」をタップして先ほど保存したブックマークを選択します。</li>
+          <li>名前を「AMUVI起動」など分かりやすいものに変更し、URLの欄に元々入っている文字をすべて削除して、<strong>以下のコードをコピーして貼り付けて保存</strong>してください。</li>
+        </ul>
+      </div>
+
+      <div class="device-content android">
+        <ul class="instructions" style="margin-bottom: 20px;">
+          <li>Chromeを開き、任意のページをブックマークに登録します。<br><span style="font-size:0.85rem; color:#888;">※右上の「︙（メニュー）」から「☆」をタップ</span></li>
+          <li>メニューの「ブックマーク」を開き、先ほど保存したブックマークの右横にある「︙」から「編集」をタップします。</li>
+          <li>名前を「AMUVI起動」など分かりやすいものに変更し、URLの欄に元々入っている文字をすべて削除して、<strong>以下のコードをコピーして貼り付けて保存</strong>してください。</li>
+        </ul>
+      </div>
+
+      <div class="code-area-container">
+        <textarea id="bookmarklet-code" class="bookmarklet-textarea" readonly>読み込み中...</textarea>
+        <button id="copy-btn" class="copy-btn">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          コピー
+        </button>
+      </div>
+
+      <div class="step-title" style="margin-top: 30px;">
+        <span class="step-number">2</span> 使い方
+      </div>
+
+      <div class="device-content iphone active">
+        <ul class="instructions">
+          <li>SafariでSunoの楽曲ページを開きます。</li>
+          <li>アドレスバー（検索窓）をタップして「AMUVI」と入力し、検索結果の下に表示されるブックマーク「AMUVI起動」をタップして実行します。<br><span style="font-size:0.85rem; color:#888;">※または、普通にブックマーク一覧を開いてタップしてもOKです。</span></li>
+          <li>下図のようなメニューが表示されますので、真ん中にある緑色の<strong>「Open in App」</strong>ボタンをタップしてください。
+            <div style="text-align: center; margin-top: 15px; margin-bottom: 15px;">
+              <img src="assets/amuvi_step.jpg" alt="Suno Export Modal" style="max-width: 100%; width: 300px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+            </div>
+          </li>
+          <li>するとAMUVIが自動的に起動します。</li>
+          <li>起動した時点で、すでに歌詞データと楽曲データ（MP3）は取り込まれています。<strong>再生ボタンを押すだけですぐにリリックビデオが楽しめます！</strong>
+            <div style="text-align: center; margin-top: 15px; margin-bottom: 10px;">
+              <img src="assets/amuvi_final_step.png" alt="AMUVI UI" style="max-width: 100%; width: 300px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="device-content android">
+        <ul class="instructions">
+          <li>ChromeでSunoの楽曲ページを開きます。</li>
+          <li>アドレスバー（検索窓）をタップして「AMUVI」と入力し、検索結果の下に表示されるブックマーク「AMUVI起動」をタップして実行します。</li>
+          <li>下図のようなメニューが表示されますので、真ん中にある緑色の<strong>「Open in App」</strong>ボタンをタップしてください。
+            <div style="text-align: center; margin-top: 15px; margin-bottom: 15px;">
+              <img src="assets/amuvi_step.jpg" alt="Suno Export Modal" style="max-width: 100%; width: 300px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+            </div>
+          </li>
+          <li>するとAMUVIが自動的に起動します。</li>
+          <li>起動した時点で、すでに歌詞データと楽曲データ（MP3）は取り込まれています。<strong>再生ボタンを押すだけですぐにリリックビデオが楽しめます！</strong>
+            <div style="text-align: center; margin-top: 15px; margin-bottom: 10px;">
+              <img src="assets/amuvi_final_step.png" alt="AMUVI UI" style="max-width: 100%; width: 300px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Fetch the bookmarklet code from assets/bookmarklet.txt
+    document.addEventListener('DOMContentLoaded', async () => {
+      const textarea = document.getElementById('bookmarklet-code');
+      const copyBtn = document.getElementById('copy-btn');
+      
+      try {
+        // Prevent caching by appending a timestamp to the fetch URL
+        const response = await fetch('assets/bookmarklet.txt?t=' + Date.now());
+        if (!response.ok) throw new Error('Failed to load code');
+        const code = await response.text();
+        textarea.value = code.trim();
+      } catch (err) {
+        textarea.value = "エラー: ブックマークレットのコードを読み込めませんでした。\n手動でコードを登録してください。";
+        console.error(err);
+      }
+
+      // Copy to clipboard functionality
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(textarea.value);
+          
+          // Visual feedback
+          const originalText = copyBtn.innerHTML;
+          copyBtn.classList.add('copied');
+          copyBtn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> コピー完了';
+          
+          setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.innerHTML = originalText;
+          }, 2000);
+        } catch (err) {
+          alert('コピーに失敗しました。手動でコピーしてください。');
+        }
+      });
+    });
+
+    // Tab Switching logic
+    window.switchDevice = function(device) {
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`.tab-button[onclick="switchDevice('${device}')"]`).classList.add('active');
+      
+      document.querySelectorAll('.device-content').forEach(content => content.classList.remove('active'));
+      document.querySelectorAll(`.device-content.${device}`).forEach(content => content.classList.add('active'));
+    };
+  </script>
+</body>
+</html>

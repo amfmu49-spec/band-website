@@ -1,0 +1,1 @@
+javascript:(function()%7Bvar%20s=document.createElement('script');s.src='https://amfmu49-spec.github.io/lyric-motion-app/bookmarklet.js?t='+Date.now();document.body.appendChild(s);%7D)();
