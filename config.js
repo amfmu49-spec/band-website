@@ -1,4 +1,4 @@
-﻿// ==========================================
+// ==========================================
 // A.M.F - Website Configuration File
 // ==========================================
 // このファイルはエディターツールによって自動生成されました。
@@ -7,6 +7,15 @@
 const BAND_CONFIG = {
   "bandName": "A.M.F",
   "tagline": "AI Music Festival",
+  "event": {
+    "title": "EVENT",
+    "date": "2026年9月11日(金)12日(土)13日(日)",
+    "eventName": "第二回AI音楽祭",
+    "theme": "今年のテーマは「時」",
+    "description": "イベント期間内に時をテーマにした作品を投稿して#第二回AI音楽祭 ※漢数字",
+    "mentions": ["@a.m.f7227", "@aimusic887", "@misata_lyrics"],
+    "notice": "@a.m.f7227　@aimusic887　@misata_lyrics　をメンションしてください"
+  },
   "heroImage": "assets/space.png",
   "spotifyEmbedId": "track/2TpxZ7JUBn3uw46607gc64",
   "spotifyPlaylistUrl": "",

@@ -39,7 +39,21 @@ function populateGeneral(config) {
   document.getElementById('spotify-embed-input').value = config.spotifyEmbedId || '';
   document.getElementById('spotify-playlist-url-input').value = config.spotifyPlaylistUrl || '';
   document.getElementById('youtube-playlist-url-input').value = config.youtubePlaylistUrl || '';
-  document.getElementById('concept-subtitle-input').value = config.concept.subtitle || '';
+  
+  // Event section loading
+  const ev = config.event || {};
+  const evDate = document.getElementById('event-date-input');
+  if (evDate) evDate.value = ev.date || '2026年9月11日(金)12日(土)13日(日)';
+  const evName = document.getElementById('event-name-input');
+  if (evName) evName.value = ev.eventName || '第二回AI音楽祭';
+  const evTheme = document.getElementById('event-theme-input');
+  if (evTheme) evTheme.value = ev.theme || '今年のテーマは「時」';
+  const evDesc = document.getElementById('event-description-input');
+  if (evDesc) evDesc.value = ev.description || 'イベント期間内に時をテーマにした作品を投稿して#第二回AI音楽祭 ※漢数字';
+  const evNotice = document.getElementById('event-notice-input');
+  if (evNotice) evNotice.value = ev.notice || '@a.m.f7227　@aimusic887　@misata_lyrics　をメンションしてください';
+
+  document.getElementById('concept-subtitle-input').value = config.concept ? config.concept.subtitle || '' : '';
   // Game images & musics loading (up to 5 slots)
   const gameImages = config.gameImages || [];
   const gameMusics = config.gameMusics || [];
@@ -791,6 +805,15 @@ function readFormValues() {
     gameMusics: [],
     gameMusicDetails: [],
     gameImage: 'assets/space.png', // Fallback for single image compatibility
+    event: {
+      title: "EVENT",
+      date: document.getElementById('event-date-input') ? document.getElementById('event-date-input').value.trim() : '2026年9月11日(金)12日(土)13日(日)',
+      eventName: document.getElementById('event-name-input') ? document.getElementById('event-name-input').value.trim() : '第二回AI音楽祭',
+      theme: document.getElementById('event-theme-input') ? document.getElementById('event-theme-input').value.trim() : '今年のテーマは「時」',
+      description: document.getElementById('event-description-input') ? document.getElementById('event-description-input').value.trim() : 'イベント期間内に時をテーマにした作品を投稿して#第二回AI音楽祭 ※漢数字',
+      mentions: ["@a.m.f7227", "@aimusic887", "@misata_lyrics"],
+      notice: document.getElementById('event-notice-input') ? document.getElementById('event-notice-input').value.trim() : '@a.m.f7227　@aimusic887　@misata_lyrics　をメンションしてください'
+    },
     concept: {
       title: "CONCEPT",
       subtitle: document.getElementById('concept-subtitle-input').value,
