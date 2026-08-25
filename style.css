@@ -403,6 +403,7 @@ body {
   margin-bottom: 15px;
   line-height: 1.8;
   font-weight: 300;
+  white-space: pre-line;
 }
 
 .concept-description-texts p:last-child {
