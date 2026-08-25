@@ -11,19 +11,25 @@ document.addEventListener('DOMContentLoaded', () => {
   if (localData) {
     try {
       const parsedLocal = JSON.parse(localData);
-      // If config.js is newer than localStorage, clear localStorage and use config.js
-      if (fileConfig && fileConfig.lastUpdated && parsedLocal.lastUpdated && fileConfig.lastUpdated > parsedLocal.lastUpdated) {
-        localStorage.removeItem('band_config_data');
-        config = fileConfig;
-        console.log('Detected newer config.js. Cleared local cache.');
-      } else if (fileConfig && fileConfig.lastUpdated && !parsedLocal.lastUpdated) {
-        localStorage.removeItem('band_config_data');
-        config = fileConfig;
+      // Check structure validity
+      if (parsedLocal && parsedLocal.concept && Array.isArray(parsedLocal.concept.description)) {
+        if (fileConfig && fileConfig.lastUpdated && parsedLocal.lastUpdated && fileConfig.lastUpdated > parsedLocal.lastUpdated) {
+          localStorage.removeItem('band_config_data');
+          config = fileConfig;
+          console.log('Detected newer config.js. Cleared local cache.');
+        } else if (fileConfig && fileConfig.lastUpdated && !parsedLocal.lastUpdated) {
+          localStorage.removeItem('band_config_data');
+          config = fileConfig;
+        } else {
+          config = parsedLocal;
+        }
       } else {
-        config = parsedLocal;
+        localStorage.removeItem('band_config_data');
+        config = fileConfig;
       }
     } catch (e) {
       console.error('LocalStorage config parse failed, falling back to config.js.', e);
+      localStorage.removeItem('band_config_data');
       config = fileConfig;
     }
   } else {
@@ -31,19 +37,22 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (!config) {
-    console.error('Configuration file (config.js) not found or failed to load.');
-    return;
+    config = fileConfig || {};
   }
 
-  // Initialize all components
-  initContent(config);
-  initModal(config);
-  initSpotifyPlayer(config);
-  initYoutubePlayer(config);
-  initNavigation();
-  initMobileMenu();
-  initLoader();
-  initVisitorCounter();
+  try {
+    initContent(config);
+    initModal(config);
+    initSpotifyPlayer(config);
+    initYoutubePlayer(config);
+    initNavigation();
+    initMobileMenu();
+    initVisitorCounter();
+  } catch (err) {
+    console.error('Initialization error during DOMContentLoaded:', err);
+  } finally {
+    initLoader();
+  }
 });
 
 /**
@@ -150,16 +159,27 @@ function initContent(config) {
   }
 
   // Concept Section
-  document.getElementById('concept-title').textContent = config.concept.title;
-  document.getElementById('concept-subtitle').textContent = config.concept.subtitle;
-  
-  const conceptDescContainer = document.getElementById('concept-description');
-  conceptDescContainer.innerHTML = '';
-  config.concept.description.forEach(paragraph => {
-    const p = document.createElement('p');
-    p.textContent = paragraph;
-    conceptDescContainer.appendChild(p);
-  });
+  if (config.concept) {
+    const conceptTitle = document.getElementById('concept-title');
+    if (conceptTitle) conceptTitle.textContent = config.concept.title || 'CONCEPT';
+    
+    const conceptSub = document.getElementById('concept-subtitle');
+    if (conceptSub) conceptSub.textContent = config.concept.subtitle || '';
+    
+    const conceptDescContainer = document.getElementById('concept-description');
+    if (conceptDescContainer) {
+      conceptDescContainer.innerHTML = '';
+      const descList = Array.isArray(config.concept.description) 
+        ? config.concept.description 
+        : (typeof config.concept.description === 'string' ? [config.concept.description] : []);
+      
+      descList.forEach(paragraph => {
+        const p = document.createElement('p');
+        p.textContent = paragraph;
+        conceptDescContainer.appendChild(p);
+      });
+    }
+  }
 
   // Biography Section
   document.getElementById('biography-title').textContent = config.biography.title;
@@ -630,14 +650,24 @@ function initMobileMenu() {
  * 5. Loader Overlay Controller
  */
 function initLoader() {
-  window.addEventListener('load', () => {
-    const loader = document.getElementById('loader');
-    if (loader) {
-      setTimeout(() => {
-        loader.classList.add('fade-out');
-      }, 600); // Aesthetic 600ms load delay to show elegant intro logo
+  const loader = document.getElementById('loader');
+  if (!loader) return;
+
+  const hideLoader = () => {
+    if (!loader.classList.contains('fade-out')) {
+      loader.classList.add('fade-out');
     }
-  });
+  };
+
+  if (document.readyState === 'complete') {
+    setTimeout(hideLoader, 300);
+  } else {
+    window.addEventListener('load', () => {
+      setTimeout(hideLoader, 300);
+    });
+    // Safety fallback: Force hide loader after 1.5 seconds max regardless of load state
+    setTimeout(hideLoader, 1500);
+  }
 }
 
 /**
