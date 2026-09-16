@@ -72,6 +72,7 @@ function initContent(config) {
   const eventContainer = document.getElementById('event-content');
   if (eventContainer) {
     const ev = config.event || {
+      noEvent: false,
       title: "EVENT",
       date: "2026年9月11日(金)12日(土)13日(日)",
       eventName: "第二回AI音楽祭",
@@ -81,80 +82,91 @@ function initContent(config) {
       notice: "@a.m.f7227　@aimusic887　@misata_lyrics{をメンションしてください}"
     };
 
-    // TikTok Icon SVG
-    const tiktokSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 1 1-2.096-2.8v-3.52a6.37 6.37 0 1 0 5.541 6.32V9.309a8.188 8.188 0 0 0 4.77 1.519V7.382a4.78 4.78 0 0 1-1.000-.696z"/></svg>`;
-    const tiktokSvgSmall = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 1 1-2.096-2.8v-3.52a6.37 6.37 0 1 0 5.541 6.32V9.309a8.188 8.188 0 0 0 4.77 1.519V7.382a4.78 4.78 0 0 1-1.000-.696z"/></svg>`;
-
-    const mentionChipsHtml = (ev.mentions || ["@a.m.f7227", "@aimusic887", "@misata_lyrics"])
-      .map(m => {
-        const handle = m.replace('@', '');
-        return `<a href="https://www.tiktok.com/@${handle}" target="_blank" rel="noopener noreferrer" class="event-mention-chip">
-          ${tiktokSvgSmall}
-          ${m}
-        </a>`;
-      }).join('');
-
-    const tiktokSearchUrl = `https://www.tiktok.com/tag/${encodeURIComponent('第二回AI音楽祭')}`;
-
-    eventContainer.innerHTML = `
-      <div class="event-header-badges">
-        <div class="event-date-badge">
-          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          ${ev.date}
+    if (ev.noEvent) {
+      eventContainer.innerHTML = `
+        <div class="event-none-container" style="padding: 40px 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;">
+          <div style="font-size: 2.5rem; line-height: 1;">✨</div>
+          <h3 style="font-size: 1.35rem; font-weight: 700; color: #ffffff; letter-spacing: 0.04em; line-height: 1.8; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.5); text-align: center;">
+            楽しいイベントを考えています。<br>しばらくお待ちください。
+          </h3>
         </div>
-        <div class="event-venue-badge">
-          ${tiktokSvg}
-          会場: TikTok
+      `;
+    } else {
+      // TikTok Icon SVG
+      const tiktokSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 1 1-2.096-2.8v-3.52a6.37 6.37 0 1 0 5.541 6.32V9.309a8.188 8.188 0 0 0 4.77 1.519V7.382a4.78 4.78 0 0 1-1.000-.696z"/></svg>`;
+      const tiktokSvgSmall = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 1 1-2.096-2.8v-3.52a6.37 6.37 0 1 0 5.541 6.32V9.309a8.188 8.188 0 0 0 4.77 1.519V7.382a4.78 4.78 0 0 1-1.000-.696z"/></svg>`;
+
+      const mentionChipsHtml = (ev.mentions || ["@a.m.f7227", "@aimusic887", "@misata_lyrics"])
+        .map(m => {
+          const handle = m.replace('@', '');
+          return `<a href="https://www.tiktok.com/@${handle}" target="_blank" rel="noopener noreferrer" class="event-mention-chip">
+            ${tiktokSvgSmall}
+            ${m}
+          </a>`;
+        }).join('');
+
+      const tiktokSearchUrl = `https://www.tiktok.com/tag/${encodeURIComponent('第二回AI音楽祭')}`;
+
+      eventContainer.innerHTML = `
+        <div class="event-header-badges">
+          <div class="event-date-badge">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            ${ev.date}
+          </div>
+          <div class="event-venue-badge">
+            ${tiktokSvg}
+            会場: TikTok
+          </div>
         </div>
-      </div>
-      
-      <h3 class="event-main-title">${ev.eventName}</h3>
-      
-      <div class="event-theme-card">
-        <span class="event-theme-text">${ev.theme}</span>
-      </div>
-      
-      <div class="event-description-box">
-        <p class="event-desc-line">
-          イベント期間内に時をテーマにした動画作品をTikTokに投稿！
-        </p>
-        <p class="event-desc-line" style="margin-top: 8px;">
-          キャプションに 
-          <span class="event-hashtag-badge" id="hashtag-copy-btn" title="クリックしてコピー">
-            #第二回AI音楽祭
-            <span style="font-size: 0.75rem; font-weight: normal; opacity: 0.8; margin-left: 4px;">※漢数字</span>
-          </span>
-          を付けて投稿してください。
-        </p>
-        <p class="event-desc-line" style="margin-top: 15px;">
-          ${ev.notice || '@a.m.f7227　@aimusic887　@misata_lyrics　をメンションしてください'}
-        </p>
-      </div>
+        
+        <h3 class="event-main-title">${ev.eventName}</h3>
+        
+        <div class="event-theme-card">
+          <span class="event-theme-text">${ev.theme}</span>
+        </div>
+        
+        <div class="event-description-box">
+          <p class="event-desc-line">
+            イベント期間内に時をテーマにした動画作品をTikTokに投稿！
+          </p>
+          <p class="event-desc-line" style="margin-top: 8px;">
+            キャプションに 
+            <span class="event-hashtag-badge" id="hashtag-copy-btn" title="クリックしてコピー">
+              #第二回AI音楽祭
+              <span style="font-size: 0.75rem; font-weight: normal; opacity: 0.8; margin-left: 4px;">※漢数字</span>
+            </span>
+            を付けて投稿してください。
+          </p>
+          <p class="event-desc-line" style="margin-top: 15px;">
+            ${ev.notice || '@a.m.f7227　@aimusic887　@misata_lyrics　をメンションしてください'}
+          </p>
+        </div>
 
-      <div class="event-mentions-container">
-        ${mentionChipsHtml}
-      </div>
+        <div class="event-mentions-container">
+          ${mentionChipsHtml}
+        </div>
 
-      <div class="event-action-buttons">
-        <a href="${tiktokSearchUrl}" target="_blank" rel="noopener noreferrer" class="event-post-btn tiktok-btn">
-          ${tiktokSvg}
-          TikTokで #第二回AI音楽祭 を見る・投稿
-        </a>
-      </div>
-    `;
+        <div class="event-action-buttons">
+          <a href="${tiktokSearchUrl}" target="_blank" rel="noopener noreferrer" class="event-post-btn tiktok-btn">
+            ${tiktokSvg}
+            TikTokで #第二回AI音楽祭 を見る・投稿
+          </a>
+        </div>
+      `;
 
-    const copyBtn = document.getElementById('hashtag-copy-btn');
-    if (copyBtn) {
-      copyBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText('#第二回AI音楽祭').then(() => {
-          alert('「#第二回AI音楽祭」をクリップボードにコピーしました！');
-        }).catch(() => {});
-      });
+      const copyBtn = document.getElementById('hashtag-copy-btn');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText('#第二回AI音楽祭').then(() => {
+            alert('「#第二回AI音楽祭」をクリップボードにコピーしました！');
+          }).catch(() => {});
+        });
+      }
     }
   }
 

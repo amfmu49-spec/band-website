@@ -42,6 +42,8 @@ function populateGeneral(config) {
   
   // Event section loading
   const ev = config.event || {};
+  const evNone = document.getElementById('event-none-checkbox');
+  if (evNone) evNone.checked = !!ev.noEvent;
   const evDate = document.getElementById('event-date-input');
   if (evDate) evDate.value = ev.date || '2026年9月11日(金)12日(土)13日(日)';
   const evName = document.getElementById('event-name-input');
@@ -806,6 +808,7 @@ function readFormValues() {
     gameMusicDetails: [],
     gameImage: 'assets/space.png', // Fallback for single image compatibility
     event: {
+      noEvent: document.getElementById('event-none-checkbox') ? document.getElementById('event-none-checkbox').checked : false,
       title: "EVENT",
       date: document.getElementById('event-date-input') ? document.getElementById('event-date-input').value.trim() : '2026年9月11日(金)12日(土)13日(日)',
       eventName: document.getElementById('event-name-input') ? document.getElementById('event-name-input').value.trim() : '第二回AI音楽祭',
