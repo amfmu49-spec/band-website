@@ -442,7 +442,7 @@ const BAND_CONFIG = {
         "x": "",
         "instagram": "",
         "tiktok": "https://www.tiktok.com/@dolphincat1",
-        "youtube": "",
+        "youtube": "https://youtube.com/channel/UC4050ueLeRLEqipFcNWpevg?si=w-ijnhwqJryKNJf9",
         "spotify": ""
       },
       "embed": ""
@@ -486,7 +486,7 @@ const BAND_CONFIG = {
       }
     }
   ],
-  "lastUpdated": 1789547215240
+  "lastUpdated": 1789649315508
 };
 
 // グローバル変数としてアタッチ
